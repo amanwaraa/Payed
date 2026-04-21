@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>أدوات السجل والنسخة الاحتياطية</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap">
+  </noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #f4f7fe;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+    }
+    .soft-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 14px;
+      font-weight: 800;
+      width: 100%;
+    }
+    .green-btn {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .amber-btn {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .red-btn {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .blue-btn {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .hidden-force { display: none !important; }
+
+    .toast-wrap {
+      position: fixed;
+      inset-inline: 16px;
+      bottom: 22px;
+      z-index: 120;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 220px;
+      max-width: 90vw;
+      background: rgba(15, 23, 42, 0.96);
+      color: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.24);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: 0.25s ease;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    .export-sheet {
+      width: 1120px;
+      background: white;
+      color: #0f172a;
+      padding: 24px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      font-family: 'Cairo', sans-serif;
+      direction: rtl;
+    }
+    .export-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 16px;
+    }
+    .export-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .export-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .export-summary {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .export-pill {
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      color: #1d4ed8;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .export-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid #e2e8f0;
+    }
+    .export-table th {
+      background: #1e3a8a;
+      color: white;
+      padding: 10px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid #1d4ed8;
+    }
+    .export-table td {
+      padding: 10px 8px;
+      font-size: 12px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+      vertical-align: middle;
+      word-wrap: break-word;
+    }
+    .export-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .export-status-paid {
+      color: #166534;
+      background: #dcfce7;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 3px 8px;
+      display: inline-block;
+    }
+    .export-status-review {
+      color: #b45309;
+      background: #fef3c7;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 3px 8px;
+      display: inline-block;
+    }
+    .export-status-unpaid {
+      color: #b91c1c;
+      background: #fee2e2;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 3px 8px;
+      display: inline-block;
+    }
+    .export-status-purchase-paid {
+      color: #0f766e;
+      background: #ccfbf1;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 3px 8px;
+      display: inline-block;
+    }
+    .export-status-settlement {
+      color: #166534;
+      background: #dcfce7;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 3px 8px;
+      display: inline-block;
+    }
+
+    .export-footer {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="p-4">
+
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-4 gap-3">
+      <a href="payed.html" class="blue-btn soft-btn text-center" style="width:auto; padding-inline:16px;">العودة إلى التطبيق</a>
+      <h1 class="text-xl font-extrabold text-blue-900">أدوات السجل والنسخة الاحتياطية</h1>
+    </div>
+
+    <div class="glass-card p-5 mb-4">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <select id="recordTypeFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+          <option value="all">الكل</option>
+          <option value="sale">المبيعات</option>
+          <option value="purchase">المشتريات</option>
+          <option value="settlement">سداد دفعات</option>
+        </select>
+
+        <select id="timeFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+          <option value="today">اليوم</option>
+          <option value="week">آخر أسبوع</option>
+          <option value="month">آخر شهر</option>
+          <option value="all">كل السجل</option>
+        </select>
+
+        <select id="statusFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+          <option value="">كل الحالات</option>
+          <option value="تم الدفع">مكتملة</option>
+          <option value="قيد المراجعة">مراجعة</option>
+          <option value="لم يدفع">دين زبون</option>
+          <option value="تم دفعها">مدفوع للتاجر</option>
+          <option value="دين">دين تاجر</option>
+          <option value="سداد">سداد دفعة</option>
+        </select>
+
+        <select id="channelFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+          <option value="">الكل</option>
+          <option value="جملة">جملة</option>
+          <option value="مفرق">مفرق</option>
+        </select>
+
+        <input type="text" id="logSearch" placeholder="بحث بالاسم أو الرقم أو التاجر..." class="p-3 rounded-xl border-gray-200 border text-sm">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div class="glass-card p-5 space-y-3">
+        <h2 class="text-lg font-extrabold text-blue-900">تصدير السجل</h2>
+        <button id="downloadPdfBtn" class="soft-btn btn-gradient">تحميل السجل PDF</button>
+        <button id="downloadImagesBtn" class="soft-btn green-btn">تحميل السجل كصور</button>
+      </div>
+
+      <div class="glass-card p-5 space-y-3">
+        <h2 class="text-lg font-extrabold text-blue-900">النسخة الاحتياطية</h2>
+        <button id="downloadBackupBtn" class="soft-btn amber-btn">تنزيل نسخة احتياطية</button>
+        <label class="soft-btn red-btn text-center cursor-pointer block">
+          رفع نسخة احتياطية
+          <input id="restoreBackupInput" type="file" accept=".json,application/json" class="hidden-force">
+        </label>
+      </div>
+    </div>
+
+    <div class="glass-card p-5">
+      <div class="flex items-center justify-between mb-3 gap-3">
+        <h2 class="text-lg font-extrabold text-blue-900">معاينة السجل</h2>
+        <div id="summaryText" class="text-sm text-gray-500">—</div>
+      </div>
+      <div id="previewList" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <div class="toast-wrap">
+    <div id="toast" class="toast">تم</div>
+  </div>
+
+  <div id="exportRenderHost" class="hidden-force"></div>
+
+  <script>
+    const DB_NAME = "PaymentManagerDB";
+    const SALES_STORE = "sales";
+    const PURCHASES_STORE = "purchases";
+    const SETTLEMENTS_STORE = "settlements";
+    const SETTINGS_KEY = "storeSettings";
+    const ACCOUNTS_KEY = "transferAccounts";
+    let db;
+
+    function qs(id) { return document.getElementById(id); }
+
+    function showToast(message) {
+      const toast = qs("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function getStoreSettings() {
+      const saved = localStorage.getItem(SETTINGS_KEY);
+      if (!saved) return { storeName: "", paymentInfo: "" };
+      try { return JSON.parse(saved); } catch { return { storeName: "", paymentInfo: "" }; }
+    }
+
+    function getTransferLine(item) {
+      if (item.transferAccountType && item.transferAccountName) {
+        return `${item.transferAccountType} - ${item.transferAccountName}`;
+      }
+      if (item.paidFromAccountType && item.paidFromAccountName) {
+        return `${item.paidFromAccountType} - ${item.paidFromAccountName}`;
+      }
+      if (item.settlementAccountType && item.settlementAccountName) {
+        return `${item.settlementAccountType} - ${item.settlementAccountName}`;
+      }
+      return "";
+    }
+
+    function getAllFromStore(storeName) {
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([storeName], "readonly");
+        const store = transaction.objectStore(storeName);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getAllRecords() {
+      const [sales, purchases, settlements] = await Promise.all([
+        getAllFromStore(SALES_STORE),
+        getAllFromStore(PURCHASES_STORE),
+        getAllFromStore(SETTLEMENTS_STORE)
+      ]);
+
+      const salesMapped = sales.map(item => ({
+        ...item,
+        recordType: "sale",
+        displayName: item.name || "",
+        displayPhone: item.phone || "",
+        displayChannel: item.channel || "مفرق",
+        displayNotes: item.items || "",
+        displayStatus: item.status || "",
+        displayAmount: Number(item.amount || 0),
+        displayAccount: getTransferLine(item)
+      }));
+
+      const purchasesMapped = purchases.map(item => ({
+        ...item,
+        recordType: "purchase",
+        displayName: item.vendorName || "",
+        displayPhone: "",
+        displayChannel: "تاجر",
+        displayNotes: item.notes || "",
+        displayStatus: item.status || "",
+        displayAmount: Number(item.amount || 0),
+        displayAccount: getTransferLine(item)
+      }));
+
+      const settlementsMapped = settlements.map(item => ({
+        ...item,
+        recordType: "settlement",
+        displayName: item.customerName || "",
+        displayPhone: item.customerPhone || "",
+        displayChannel: "سداد",
+        displayNotes: item.note || "",
+        displayStatus: "سداد",
+        displayAmount: Number(item.amount || 0),
+        displayAccount: getTransferLine(item)
+      }));
+
+      return [...salesMapped, ...purchasesMapped, ...settlementsMapped];
+    }
+
+    function applyTimeFilter(data, timeRange) {
+      const now = new Date();
+      if (timeRange === "all") return data;
+
+      return data.filter(item => {
+        const itemDate = new Date(item.date);
+        if (timeRange === "today") return itemDate.toDateString() === now.toDateString();
+        if (timeRange === "week") return (now - itemDate) < 7 * 24 * 60 * 60 * 1000;
+        if (timeRange === "month") return (now - itemDate) < 30 * 24 * 60 * 60 * 1000;
+        return true;
+      });
+    }
+
+    async function getFilteredRecords() {
+      let data = await getAllRecords();
+
+      const recordType = qs("recordTypeFilter").value;
+      const timeRange = qs("timeFilter").value;
+      const searchTerm = qs("logSearch").value.toLowerCase().trim();
+      const statusTerm = qs("statusFilter").value;
+      const channelTerm = qs("channelFilter").value;
+
+      data = applyTimeFilter(data, timeRange);
+
+      if (recordType !== "all") {
+        data = data.filter(item => item.recordType === recordType);
+      }
+
+      if (statusTerm) {
+        data = data.filter(item => item.displayStatus === statusTerm);
+      }
+
+      if (channelTerm) {
+        data = data.filter(item => item.recordType === "sale" && (item.displayChannel || "مفرق") === channelTerm);
+      }
+
+      if (searchTerm) {
+        data = data.filter(item =>
+          String(item.displayName || "").toLowerCase().includes(searchTerm) ||
+          String(item.displayPhone || "").includes(searchTerm) ||
+          String(item.vendorName || "").toLowerCase().includes(searchTerm) ||
+          String(item.customerName || "").toLowerCase().includes(searchTerm) ||
+          String(item.displayNotes || "").toLowerCase().includes(searchTerm)
+        );
+      }
+
+      return data.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function getStatusBadge(status) {
+      if (status === "تم الدفع") return `<span class="export-status-paid">${escapeHtml(status)}</span>`;
+      if (status === "قيد المراجعة") return `<span class="export-status-review">${escapeHtml(status)}</span>`;
+      if (status === "لم يدفع" || status === "دين") return `<span class="export-status-unpaid">${escapeHtml(status)}</span>`;
+      if (status === "تم دفعها") return `<span class="export-status-purchase-paid">${escapeHtml(status)}</span>`;
+      if (status === "سداد") return `<span class="export-status-settlement">${escapeHtml(status)}</span>`;
+      return `<span class="export-status-paid">${escapeHtml(status || "")}</span>`;
+    }
+
+    async function renderPreview() {
+      const data = await getFilteredRecords();
+      const total = data.reduce((sum, item) => sum + Number(item.displayAmount || 0), 0);
+      qs("summaryText").textContent = `عدد السجلات: ${data.length} | الإجمالي: ${total.toFixed(2)} ₪`;
+
+      const container = qs("previewList");
+      container.innerHTML = "";
+
+      if (!data.length) {
+        container.innerHTML = `<div class="text-sm text-gray-500 text-center bg-gray-50 rounded-xl p-4">لا توجد نتائج</div>`;
+        return;
+      }
+
+      data.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "bg-white border border-slate-200 rounded-2xl p-4";
+        card.innerHTML = `
+          <div class="flex justify-between items-start gap-3">
+            <div class="min-w-0">
+              <div class="font-extrabold text-slate-800">${escapeHtml(item.displayName || "")}</div>
+              <div class="text-xs text-slate-500 mt-1">${new Date(item.date).toLocaleString("ar-EG")}</div>
+              <div class="text-xs text-slate-500 mt-1">${escapeHtml(item.displayPhone || "")}</div>
+            </div>
+            <div class="text-left">
+              <div class="font-extrabold text-blue-700">${Number(item.displayAmount || 0).toFixed(2)} ₪</div>
+              <div class="text-xs mt-2">${getStatusBadge(item.displayStatus || "")}</div>
+            </div>
+          </div>
+          <div class="mt-2 text-xs text-slate-600">النوع: ${escapeHtml(item.displayChannel || "")}</div>
+          <div class="mt-1 text-xs text-slate-500">الحساب: ${escapeHtml(item.displayAccount || "غير محدد")}</div>
+          <div class="mt-1 text-xs text-slate-500">${escapeHtml(item.displayNotes || "")}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function chunkArray(arr, size) {
+      const out = [];
+      for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+      return out;
+    }
+
+    function buildExportTitle() {
+      const timeLabelMap = {
+        today: "اليوم",
+        week: "آخر أسبوع",
+        month: "آخر شهر",
+        all: "كل السجل"
+      };
+
+      const typeLabelMap = {
+        all: "الكل",
+        sale: "المبيعات",
+        purchase: "المشتريات",
+        settlement: "سداد دفعات"
+      };
+
+      const parts = [
+        `سجل الحركات - ${typeLabelMap[qs("recordTypeFilter").value] || "الكل"}`,
+        timeLabelMap[qs("timeFilter").value] || "كل السجل"
+      ];
+
+      if (qs("statusFilter").value) parts.push(qs("statusFilter").value);
+      if (qs("channelFilter").value) parts.push(qs("channelFilter").value);
+
+      return parts.join(" - ");
+    }
+
+    function buildExportPagesHtml(data, title) {
+      const settings = getStoreSettings();
+
+      const rows = data.map(item => `
+        <tr>
+          <td>${escapeHtml(new Date(item.date).toLocaleString("ar-EG"))}</td>
+          <td>${escapeHtml(item.displayName || "")}</td>
+          <td>${escapeHtml(item.displayPhone || "")}</td>
+          <td>${escapeHtml(item.displayChannel || "")}</td>
+          <td>${getStatusBadge(item.displayStatus || "")}</td>
+          <td>${Number(item.displayAmount || 0).toFixed(2)} ₪</td>
+          <td>${escapeHtml(item.displayAccount || "")}</td>
+          <td>${escapeHtml(item.displayNotes || "")}</td>
+        </tr>
+      `);
+
+      const total = data.reduce((sum, item) => sum + Number(item.displayAmount || 0), 0).toFixed(2);
+      const chunks = chunkArray(rows, 16);
+
+      return chunks.map((chunkRows, index) => `
+        <div class="export-sheet">
+          <div class="export-header">
+            <div>
+              <div class="export-title">${escapeHtml(title)}</div>
+              <div class="export-subtitle">${escapeHtml(settings.storeName || "مدير المدفوعات والمبيعات والمشتريات")}</div>
+            </div>
+            <div class="export-subtitle">صفحة ${index + 1} من ${chunks.length}</div>
+          </div>
+
+          <div class="export-summary">
+            <div class="export-pill">عدد السجلات: ${data.length}</div>
+            <div class="export-pill">الإجمالي: ${total} ₪</div>
+            <div class="export-pill">تاريخ الإنشاء: ${new Date().toLocaleString("ar-EG")}</div>
+          </div>
+
+          <table class="export-table">
+            <thead>
+              <tr>
+                <th style="width: 16%;">التاريخ</th>
+                <th style="width: 14%;">الاسم</th>
+                <th style="width: 12%;">الهاتف</th>
+                <th style="width: 10%;">النوع</th>
+                <th style="width: 14%;">الحالة</th>
+                <th style="width: 10%;">المبلغ</th>
+                <th style="width: 12%;">الحساب</th>
+                <th style="width: 12%;">الملاحظات</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${chunkRows.join("")}
+            </tbody>
+          </table>
+
+          <div class="export-footer">
+            هذا التقرير تم إنشاؤه من صفحة الأدوات
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function renderExportCanvases(data, title) {
+      const host = qs("exportRenderHost");
+      host.classList.remove("hidden-force");
+      host.innerHTML = `<div style="position:fixed;left:-100000px;top:0;z-index:-1;padding:20px;background:#f4f7fe;">${buildExportPagesHtml(data, title)}</div>`;
+
+      const sheets = [...host.querySelectorAll(".export-sheet")];
+      const canvases = [];
+
+      for (const sheet of sheets) {
+        const canvas = await html2canvas(sheet, {
+          scale: 2,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+          logging: false
+        });
+        canvases.push(canvas);
+      }
+
+      host.innerHTML = "";
+      host.classList.add("hidden-force");
+      return canvases;
+    }
+
+    async function exportCurrentLogAsPdf() {
+      const data = await getFilteredRecords();
+      if (!data.length) {
+        showToast("لا توجد بيانات للتصدير");
+        return;
+      }
+
+      const canvases = await renderExportCanvases(data, buildExportTitle());
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const drawW = pageW - margin * 2;
+
+      canvases.forEach((canvas, index) => {
+        if (index > 0) doc.addPage();
+        const imgData = canvas.toDataURL("image/jpeg", 1.0);
+        const ratio = canvas.height / canvas.width;
+        const drawH = Math.min(pageH - margin * 2, drawW * ratio);
+        doc.addImage(imgData, "JPEG", margin, margin, drawW, drawH);
+      });
+
+      doc.save(`records_${Date.now()}.pdf`);
+      showToast("تم تنزيل PDF");
+    }
+
+    async function exportCurrentLogAsImages() {
+      const data = await getFilteredRecords();
+      if (!data.length) {
+        showToast("لا توجد بيانات للتصدير");
+        return;
+      }
+
+      const canvases = await renderExportCanvases(data, buildExportTitle());
+
+      canvases.forEach((canvas, index) => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = `records_${index + 1}.png`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      });
+
+      showToast("تم تنزيل الصور");
+    }
+
+    async function downloadBackup() {
+      const [sales, purchases, settlements] = await Promise.all([
+        getAllFromStore(SALES_STORE),
+        getAllFromStore(PURCHASES_STORE),
+        getAllFromStore(SETTLEMENTS_STORE)
+      ]);
+
+      const settingsRaw = localStorage.getItem(SETTINGS_KEY) || "{}";
+      const accountsRaw = localStorage.getItem(ACCOUNTS_KEY) || "[]";
+
+      const backup = {
+        exportedAt: new Date().toISOString(),
+        version: 2,
+        sales,
+        purchases,
+        settlements,
+        settings: JSON.parse(settingsRaw || "{}"),
+        accounts: JSON.parse(accountsRaw || "[]")
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `backup_${Date.now()}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+      showToast("تم تنزيل النسخة الاحتياطية");
+    }
+
+    function clearStore(store) {
+      return new Promise((resolve, reject) => {
+        const req = store.clear();
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function putItem(store, item) {
+      return new Promise((resolve, reject) => {
+        const req = store.put(item);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function restoreBackup(file) {
+      const text = await file.text();
+      const data = JSON.parse(text);
+
+      const sales = Array.isArray(data.sales) ? data.sales : [];
+      const purchases = Array.isArray(data.purchases) ? data.purchases : [];
+      const settlements = Array.isArray(data.settlements) ? data.settlements : [];
+
+      if (!Array.isArray(sales) || !Array.isArray(purchases) || !Array.isArray(settlements)) {
+        throw new Error("ملف النسخة غير صالح");
+      }
+
+      await new Promise((resolve, reject) => {
+        const transaction = db.transaction([SALES_STORE, PURCHASES_STORE, SETTLEMENTS_STORE], "readwrite");
+        const salesStore = transaction.objectStore(SALES_STORE);
+        const purchasesStore = transaction.objectStore(PURCHASES_STORE);
+        const settlementsStore = transaction.objectStore(SETTLEMENTS_STORE);
+
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+
+        (async () => {
+          await clearStore(salesStore);
+          await clearStore(purchasesStore);
+          await clearStore(settlementsStore);
+
+          for (const item of sales) await putItem(salesStore, item);
+          for (const item of purchases) await putItem(purchasesStore, item);
+          for (const item of settlements) await putItem(settlementsStore, item);
+        })().catch(reject);
+      });
+
+      if (data.settings && typeof data.settings === "object") {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.settings));
+      }
+
+      if (Array.isArray(data.accounts)) {
+        localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(data.accounts));
+      }
+    }
+
+    const request = indexedDB.open(DB_NAME, 4);
+
+    request.onupgradeneeded = (e) => {
+      db = e.target.result;
+
+      if (!db.objectStoreNames.contains(SALES_STORE)) {
+        const sales = db.createObjectStore(SALES_STORE, { keyPath: "id", autoIncrement: true });
+        sales.createIndex("name", "name", { unique: false });
+        sales.createIndex("date", "date", { unique: false });
+        sales.createIndex("phone", "phone", { unique: false });
+        sales.createIndex("channel", "channel", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(PURCHASES_STORE)) {
+        const purchases = db.createObjectStore(PURCHASES_STORE, { keyPath: "id", autoIncrement: true });
+        purchases.createIndex("vendorName", "vendorName", { unique: false });
+        purchases.createIndex("date", "date", { unique: false });
+        purchases.createIndex("status", "status", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(SETTLEMENTS_STORE)) {
+        const settlements = db.createObjectStore(SETTLEMENTS_STORE, { keyPath: "id", autoIncrement: true });
+        settlements.createIndex("customerName", "customerName", { unique: false });
+        settlements.createIndex("customerPhone", "customerPhone", { unique: false });
+        settlements.createIndex("date", "date", { unique: false });
+      }
+    };
+
+    request.onsuccess = async (e) => {
+      db = e.target.result;
+
+      qs("recordTypeFilter").addEventListener("change", renderPreview);
+      qs("timeFilter").addEventListener("change", renderPreview);
+      qs("statusFilter").addEventListener("change", renderPreview);
+      qs("channelFilter").addEventListener("change", renderPreview);
+      qs("logSearch").addEventListener("input", renderPreview);
+
+      qs("downloadPdfBtn").addEventListener("click", exportCurrentLogAsPdf);
+      qs("downloadImagesBtn").addEventListener("click", exportCurrentLogAsImages);
+      qs("downloadBackupBtn").addEventListener("click", downloadBackup);
+
+      qs("restoreBackupInput").addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+          await restoreBackup(file);
+          showToast("تم استرجاع النسخة الاحتياطية");
+          await renderPreview();
+        } catch (err) {
+          console.error(err);
+          showToast("تعذر استرجاع النسخة الاحتياطية");
+        } finally {
+          e.target.value = "";
+        }
+      });
+
+      await renderPreview();
+    };
+
+    request.onerror = () => {
+      showToast("حدث خطأ في فتح قاعدة البيانات");
+    };
+  </script>
+</body>
+</html>

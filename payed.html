@@ -1,0 +1,3115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <link rel="manifest" href="./manifest-payed.json">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>مدير المدفوعات والمبيعات والمشتريات</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap">
+  </noscript>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #f4f7fe;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    }
+    .status-paid { color: #10b981; background: #ecfdf5; }
+    .status-review { color: #f59e0b; background: #fffbeb; }
+    .status-unpaid { color: #ef4444; background: #fef2f2; }
+    .status-purchase-paid { color: #0f766e; background: #ccfbf1; }
+    .status-purchase-debt { color: #b91c1c; background: #fee2e2; }
+
+    .page { display: none; animation: fadeIn 0.28s ease-out; }
+    .page.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+    .suggestions {
+      position: absolute;
+      z-index: 50;
+      width: 100%;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .line-clamp-1 {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    textarea { resize: none; }
+
+    .settings-btn {
+      width: 46px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.14);
+      transition: 0.2s ease;
+    }
+    .settings-btn:active { transform: scale(0.96); }
+    .settings-btn svg { width: 22px; height: 22px; stroke-width: 2.1; }
+
+    .card-action-btn {
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .edit-btn-small { background: #dbeafe; color: #1d4ed8; }
+    .delete-btn-small { background: #fee2e2; color: #dc2626; }
+
+    .modal-animate { animation: modalPop 0.22s ease-out; }
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.94) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .account-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+
+    .account-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .mini-delete-btn {
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .rights-box {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      color: #1e3a8a;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.9;
+      font-weight: 700;
+    }
+
+    .top-action-btn {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 12px;
+      font-weight: 800;
+      background: #ecfdf5;
+      color: #166534;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(22, 101, 52, 0.08);
+    }
+
+    .message-preview-box {
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 2;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      max-height: 50vh;
+      overflow-y: auto;
+      font-size: 14px;
+      color: #0f172a;
+    }
+
+    .copy-btn, .send-btn, .sms-btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 800;
+      color: white;
+    }
+    .copy-btn { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+    .send-btn { background: linear-gradient(135deg, #15803d 0%, #22c55e 100%); }
+    .sms-btn { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); }
+
+    .login-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(180deg, #eff6ff 0%, #f8fbff 100%);
+    }
+
+    .toast-wrap {
+      position: fixed;
+      inset-inline: 16px;
+      bottom: 22px;
+      z-index: 120;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 220px;
+      max-width: 90vw;
+      background: rgba(15, 23, 42, 0.96);
+      color: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.24);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: 0.25s ease;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    .hidden-force { display: none !important; }
+
+    .whatsapp-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      background: #ecfdf5;
+      border: 1px solid #bbf7d0;
+      text-align: center;
+      line-height: 1.9;
+      font-size: 13px;
+      font-weight: 800;
+      color: #166534;
+    }
+
+    .help-section {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .help-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+    }
+
+    .help-text {
+      color: #334155;
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+    }
+    .setting-row + .setting-row { margin-top: 12px; }
+
+    .setting-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eff6ff;
+      color: #1d4ed8;
+      flex-shrink: 0;
+    }
+
+    .setting-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .setting-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .logout-btn, .tools-btn {
+      width: 100%;
+      border: none;
+      border-radius: 16px;
+      padding: 14px;
+      font-weight: 800;
+    }
+
+    .logout-btn {
+      background: #fee2e2;
+      color: #b91c1c;
+      box-shadow: 0 4px 14px rgba(185, 28, 28, 0.08);
+    }
+
+    .tools-btn {
+      background: #e0f2fe;
+      color: #075985;
+      box-shadow: 0 4px 14px rgba(7, 89, 133, 0.08);
+      margin-top: 12px;
+    }
+
+    .license-inline-badge {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+      max-width: 55%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .license-inline-trial { background: rgba(254, 243, 199, 0.22); color: #fff7db; }
+    .license-inline-temp { background: rgba(219, 234, 254, 0.18); color: #eff6ff; }
+    .license-inline-permanent { background: rgba(220, 252, 231, 0.18); color: #ecfdf5; }
+
+    #helpBtn {
+      font-size: 11px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+      font-weight: 800;
+      min-width: 74px;
+    }
+
+    .channel-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      margin-top: 6px;
+      background: #eef2ff;
+      color: #4338ca;
+    }
+
+    .type-tab {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 10px;
+      font-weight: 800;
+      font-size: 13px;
+      background: #e2e8f0;
+      color: #334155;
+      transition: .2s ease;
+      width: 100%;
+    }
+    .type-tab.active {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      box-shadow: 0 8px 18px rgba(59,130,246,.22);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-box {
+      border-radius: 18px;
+      padding: 14px;
+      background: white;
+      border: 1px solid #e2e8f0;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .summary-value {
+      font-size: 19px;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .sub-card {
+      border-radius: 18px;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 6px 20px rgba(15,23,42,.04);
+    }
+
+    .soft-blue { background: linear-gradient(135deg,#eff6ff 0%,#ffffff 100%); }
+    .soft-green { background: linear-gradient(135deg,#ecfdf5 0%,#ffffff 100%); }
+    .soft-red { background: linear-gradient(135deg,#fef2f2 0%,#ffffff 100%); }
+    .soft-amber { background: linear-gradient(135deg,#fffbeb 0%,#ffffff 100%); }
+
+    .mini-stat-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .mini-stat-title {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .mini-stat-value {
+      color: #0f172a;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .settlement-row {
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .settlement-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #dcfce7;
+      color: #166534;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="appRoot" class="hidden-force">
+    <nav class="bg-white shadow-sm p-4 sticky top-0 z-40 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="backBtn" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <h1 id="pageTitle" class="text-xl font-bold text-blue-900">الرئيسية</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="helpBtn">شرح التطبيق</button>
+        <button id="settingsBtn" class="settings-btn" title="الإعدادات">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.094c.55 0 1.02.398 1.11.94l.149.894a1.125 1.125 0 001.675.774l.79-.452a1.125 1.125 0 011.358.18l.773.773c.39.39.46.997.18 1.358l-.452.79a1.125 1.125 0 00.774 1.675l.894.149c.542.09.94.56.94 1.11v1.094c0 .55-.398 1.02-.94 1.11l-.894.149a1.125 1.125 0 00-.774 1.675l.452.79c.28.49.21 1.068-.18 1.358l-.773.773a1.125 1.125 0 01-1.358.18l-.79-.452a1.125 1.125 0 00-1.675.774l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.02-.398-1.11-.94l-.149-.894a1.125 1.125 0 00-1.675-.774l-.79.452a1.125 1.125 0 01-1.358-.18l-.773-.773a1.125 1.125 0 01-.18-1.358l.452-.79a1.125 1.125 0 00-.774-1.675l-.894-.149a1.125 1.125 0 01-.94-1.11v-1.094c0-.55.398-1.02.94-1.11l.894-.149a1.125 1.125 0 00.774-1.675l-.452-.79a1.125 1.125 0 01.18-1.358l.773-.773a1.125 1.125 0 011.358-.18l.79.452a1.125 1.125 0 001.675-.774l.149-.894z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <main class="p-4 mb-28">
+      <div id="homePage" class="page active">
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button id="tabSalesBtn" class="type-tab active">المبيعات</button>
+          <button id="tabPurchasesBtn" class="type-tab">مشتريات التجار</button>
+        </div>
+
+        <div id="todayCard" class="btn-gradient p-6 rounded-3xl text-white shadow-lg mb-4 cursor-pointer relative overflow-hidden">
+          <div id="licenseInlineBadge" class="license-inline-badge hidden-force">
+            <span id="licenseInlineBadgeText">—</span>
+          </div>
+
+          <p class="text-blue-100 text-sm mb-1 mt-6">ملخص اليوم</p>
+          <div id="todayTotal" class="text-3xl font-bold">0.00 ₪</div>
+          <div class="mt-4 flex justify-between items-center text-xs opacity-80">
+            <span>اضغط لعرض السجل الكامل</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="summary-grid mb-6">
+          <div class="summary-box soft-green">
+            <div class="summary-label">إجمالي المبيعات المكتملة</div>
+            <div id="sumCompletedSales" class="summary-value">0.00 ₪</div>
+          </div>
+          <div class="summary-box soft-red">
+            <div class="summary-label">ديون الزبائن</div>
+            <div id="sumCustomerDebts" class="summary-value">0.00 ₪</div>
+          </div>
+          <div class="summary-box soft-blue">
+            <div class="summary-label">مدفوعات التجار</div>
+            <div id="sumVendorPaid" class="summary-value">0.00 ₪</div>
+          </div>
+          <div class="summary-box soft-amber">
+            <div class="summary-label">ديون التجار</div>
+            <div id="sumVendorDebts" class="summary-value">0.00 ₪</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-6">
+          <div id="paidCard" class="glass-card p-3 text-center border-b-4 border-green-500 cursor-pointer">
+            <p class="text-xs text-gray-500">مكتملة</p>
+            <p id="countPaid" class="text-xl font-bold text-green-600">0</p>
+          </div>
+          <div id="reviewCard" class="glass-card p-3 text-center border-b-4 border-amber-500 cursor-pointer">
+            <p class="text-xs text-gray-500">مراجعة</p>
+            <p id="countReview" class="text-xl font-bold text-amber-600">0</p>
+          </div>
+          <div id="unpaidCard" class="glass-card p-3 text-center border-b-4 border-red-500 cursor-pointer">
+            <p class="text-xs text-gray-500">ديون</p>
+            <p id="countUnpaid" class="text-xl font-bold text-red-600">0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button id="addPaymentBtn" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold shadow-md flex justify-center items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            إضافة بيع
+          </button>
+
+          <button id="addPurchaseBtn" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold shadow-md flex justify-center items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h18M9 3v18m6-12l-6 6"/>
+            </svg>
+            إضافة مشتريات
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <button id="openDebtsBtn" class="tools-btn m-0">قسم الديون</button>
+          <button id="openReportsBtn" class="tools-btn m-0">التقارير والأرصدة</button>
+        </div>
+
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-blue-900">آخر الحركات</h2>
+          <button id="showMoreBtn" class="text-sm text-blue-600 font-semibold">عرض المزيد</button>
+        </div>
+        <div id="recentPayments" class="space-y-3"></div>
+      </div>
+
+      <div id="fullLogPage" class="page">
+        <div class="glass-card p-4 mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <select id="recordTypeFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+              <option value="all">الكل</option>
+              <option value="sale">المبيعات</option>
+              <option value="purchase">المشتريات</option>
+              <option value="settlement">سداد دفعات</option>
+            </select>
+
+            <select id="timeFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+              <option value="today">اليوم</option>
+              <option value="week">آخر أسبوع</option>
+              <option value="month">آخر شهر</option>
+              <option value="all">كل السجل</option>
+            </select>
+
+            <select id="statusFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+              <option value="">كل الحالات</option>
+              <option value="تم الدفع">مكتملة</option>
+              <option value="قيد المراجعة">مراجعة</option>
+              <option value="لم يدفع">دين زبون</option>
+              <option value="تم دفعها">مدفوعة للتاجر</option>
+              <option value="دين">دين تاجر</option>
+              <option value="سداد">سداد دفعة</option>
+            </select>
+
+            <input type="text" id="logSearch" placeholder="بحث بالاسم أو الرقم أو التاجر..." class="p-3 rounded-xl border-gray-200 border text-sm">
+          </div>
+
+          <select id="channelFilter" class="p-3 rounded-xl border-gray-200 border text-sm mt-3">
+            <option value="">الكل</option>
+            <option value="جملة">جملة</option>
+            <option value="مفرق">مفرق</option>
+          </select>
+
+          <a href="Payed2.html" class="tools-btn block text-center">أدوات PDF وExcel والصور والنسخة الاحتياطية</a>
+        </div>
+
+        <div id="logItems" class="space-y-3"></div>
+      </div>
+
+      <div id="addPaymentPage" class="page">
+        <div class="glass-card p-6 space-y-4">
+          <div class="relative">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">اسم الزبون</label>
+            <input type="text" id="custName" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 focus:bg-white transition-all outline-none" placeholder="أدخل الاسم...">
+            <div id="nameSuggestions" class="suggestions hidden"></div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">رقم الجوال</label>
+            <input type="tel" id="custPhone" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="05x xxxxxxx">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">النوع</label>
+              <select id="payChannel" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none">
+                <option value="جملة">جملة</option>
+                <option value="مفرق">مفرق</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">الحالة</label>
+              <select id="payStatus" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none">
+                <option value="تم الدفع">تم الدفع</option>
+                <option value="قيد المراجعة">قيد المراجعة</option>
+                <option value="لم يدفع">لم يدفع / دين</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">المبلغ (₪)</label>
+              <input type="number" id="payAmount" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="0.00">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">تم التحويل إلى</label>
+              <select id="transferAccountSelect" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none">
+                <option value="">اختر الحساب</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">قائمة المشتريات (اختياري)</label>
+            <textarea id="payItems" rows="3" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="مثلاً: حليب، خبز، بيض..."></textarea>
+          </div>
+
+          <button id="savePaymentBtn" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold mt-4 shadow-lg">حفظ البيع</button>
+        </div>
+      </div>
+
+      <div id="addPurchasePage" class="page">
+        <div class="glass-card p-6 space-y-4">
+          <div class="relative">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">اسم التاجر</label>
+            <input type="text" id="vendorName" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="أدخل اسم التاجر...">
+            <div id="vendorSuggestions" class="suggestions hidden"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">المبلغ (₪)</label>
+              <input type="number" id="purchaseAmount" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="0.00">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 mb-1">الحالة</label>
+              <select id="purchaseStatus" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none">
+                <option value="تم دفعها">تم دفعها</option>
+                <option value="دين">دين</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">الحساب الذي خرجت منه الدفعة</label>
+            <select id="purchaseAccountSelect" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none">
+              <option value="">اختر الحساب</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 mb-1">الملاحظات / تفاصيل البضاعة</label>
+            <textarea id="purchaseNotes" rows="4" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="مثلاً: مواد تموينية، مشروبات، سكاكر..."></textarea>
+          </div>
+
+          <button id="savePurchaseBtn" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg">حفظ المشتريات</button>
+        </div>
+      </div>
+
+      <div id="debtsPage" class="page">
+        <div class="grid grid-cols-1 gap-4">
+          <div class="sub-card soft-red">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-extrabold text-red-700">ديون الزبائن</h3>
+              <span id="customerDebtsCount" class="text-xs font-bold text-red-700">0</span>
+            </div>
+            <div class="text-sm text-slate-500 mb-3">كل دفعة غير مكتملة تُحسب دينًا، وعند تعديلها أو سدادها يتحدث الرصيد فورًا.</div>
+            <div id="customerDebtsList" class="space-y-3"></div>
+          </div>
+
+          <div class="sub-card soft-amber">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-extrabold text-amber-700">ديون التجار</h3>
+              <span id="vendorDebtsCount" class="text-xs font-bold text-amber-700">0</span>
+            </div>
+            <div class="text-sm text-slate-500 mb-3">المشتريات التي سجلتها كدين ولم تدفعها بعد.</div>
+            <div id="vendorDebtsList" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportsPage" class="page">
+        <div class="glass-card p-5 mb-4">
+          <h2 class="text-lg font-extrabold text-blue-900 mb-4">ملخص التقارير</h2>
+
+          <div class="summary-grid">
+            <div class="summary-box soft-green">
+              <div class="summary-label">إجمالي المبيعات المكتملة</div>
+              <div id="reportCompletedSales" class="summary-value">0.00 ₪</div>
+            </div>
+
+            <div class="summary-box soft-red">
+              <div class="summary-label">صافي ديون الزبائن</div>
+              <div id="reportCustomerDebts" class="summary-value">0.00 ₪</div>
+            </div>
+
+            <div class="summary-box soft-blue">
+              <div class="summary-label">صافي المدفوعات للتجار</div>
+              <div id="reportVendorPaid" class="summary-value">0.00 ₪</div>
+            </div>
+
+            <div class="summary-box soft-amber">
+              <div class="summary-label">صافي ديون التجار</div>
+              <div id="reportVendorDebts" class="summary-value">0.00 ₪</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-5 mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-extrabold text-slate-800">أرصدة الحسابات الفرعية</h3>
+            <span class="text-xs text-slate-500">للدفعات المكتملة والمدفوعة</span>
+          </div>
+          <div id="accountBalancesList" class="space-y-3"></div>
+        </div>
+
+        <div class="glass-card p-5">
+          <a href="Payed2.html" class="tools-btn block text-center">التصدير PDF و Excel و الصور</a>
+        </div>
+      </div>
+
+      <div id="userProfilePage" class="page">
+        <div class="glass-card p-5 mb-4 bg-blue-50">
+          <h2 id="profileName" class="text-xl font-bold text-blue-900">---</h2>
+          <p id="profilePhone" class="text-sm text-gray-600 mb-3">---</p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="mini-stat-card">
+              <div class="mini-stat-title">إجمالي غير مكتمل</div>
+              <div id="profileTotalDebtBeforeSettlements" class="mini-stat-value">0.00 ₪</div>
+            </div>
+            <div class="mini-stat-card">
+              <div class="mini-stat-title">إجمالي ما تم سداده</div>
+              <div id="profileTotalSettled" class="mini-stat-value">0.00 ₪</div>
+            </div>
+            <div class="mini-stat-card">
+              <div class="mini-stat-title">المتبقي على الزبون</div>
+              <div id="profileRemainingDebt" class="mini-stat-value">0.00 ₪</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 mb-4">
+          <button id="generateCustomerMessageBtn" class="top-action-btn">إنشاء رسالة للزبون</button>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <select id="profileChannelFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+              <option value="">الكل</option>
+              <option value="جملة">جملة</option>
+              <option value="مفرق">مفرق</option>
+            </select>
+
+            <select id="profileStatusFilter" class="p-3 rounded-xl border-gray-200 border text-sm">
+              <option value="">كل الحالات</option>
+              <option value="تم الدفع">مكتملة</option>
+              <option value="قيد المراجعة">مراجعة</option>
+              <option value="لم يدفع">غير مدفوع</option>
+            </select>
+          </div>
+
+          <a href="Payed2.html" class="tools-btn block text-center">أدوات PDF وExcel والنسخة الاحتياطية</a>
+        </div>
+
+        <div class="glass-card p-4 mb-4">
+          <h3 class="text-base font-extrabold text-slate-800 mb-3">سداد دفعة</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input type="number" id="settlementAmountInput" class="p-3 rounded-xl border border-gray-200 bg-gray-50 outline-none" placeholder="مبلغ السداد">
+            <select id="settlementAccountSelect" class="p-3 rounded-xl border border-gray-200 bg-gray-50 outline-none">
+              <option value="">اختر الحساب</option>
+            </select>
+            <button id="saveSettlementBtn" class="btn-gradient text-white py-3 rounded-2xl font-bold">حفظ السداد</button>
+          </div>
+          <textarea id="settlementNoteInput" rows="2" class="w-full mt-3 p-3 rounded-xl border border-gray-200 bg-gray-50 outline-none" placeholder="ملاحظة السداد (اختياري)"></textarea>
+        </div>
+
+        <div class="glass-card p-4 mb-4">
+          <h3 class="text-base font-extrabold text-slate-800 mb-3">سجل السداد</h3>
+          <div id="userSettlementsList" class="space-y-3"></div>
+        </div>
+
+        <div id="userLogItems" class="space-y-3"></div>
+      </div>
+
+      <div id="helpPage" class="page">
+        <div class="glass-card p-6">
+          <div class="help-section">
+            <div class="help-title">المبيعات والمشتريات</div>
+            <div class="help-text">يمكنك تسجيل بيع للزبائن أو شراء من التاجر، وكل حركة تظهر في السجل والتقارير بدون تكرار.</div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-title">الديون</div>
+            <div class="help-text">أي دفعة زبون حالتها لم يدفع أو قيد المراجعة تُحسب دينًا، وأي مشتريات حالتها دين تُحسب ديون تجار. عند تعديل الحالة يتحدث كل شيء تلقائيًا.</div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-title">سداد دفعة</div>
+            <div class="help-text">من صفحة الزبون يمكنك تسجيل سداد جزئي أو كامل، وسيتم خصم السداد من الرصيد المتبقي فورًا.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsPage" class="page">
+        <div class="glass-card p-4">
+          <div class="setting-row">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="setting-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5V4H2v16h5m10 0v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4m10 0H7"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="setting-title">حالة المفتاح</div>
+                <div id="settingsLicenseStatus" class="setting-subtitle">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="setting-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1 13h10M15 11h5m-5 4h5M4 9h7v11H4V9z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <div class="setting-title">لشراء المفتاح يرجى مراسلتنا واتساب</div>
+                <div class="setting-subtitle">970597603119</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="setting-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 1.657-1.79 3-4 3S4 12.657 4 11s1.79-3 4-3 4 1.343 4 3zm8 0c0 1.657-1.79 3-4 3s-4-1.343-4-3 1.79-3 4-3 4 1.343 4 3zM4 20h16"/>
+                </svg>
+              </div>
+              <div class="min-w-0 w-full">
+                <div class="setting-title">اسم المتجر أو البقالة</div>
+                <input type="text" id="storeNameInput" class="w-full mt-2 p-3 bg-gray-50 rounded-xl border text-sm outline-none" placeholder="مثلاً: بقالة الأمانة">
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="setting-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h8M8 14h5M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 w-full">
+                <div class="setting-title">معلومات الدفع</div>
+                <textarea id="paymentInfoInput" rows="5" class="w-full mt-2 p-3 bg-gray-50 rounded-xl border text-sm outline-none" placeholder="مثلاً:
+بنك فلسطين - أحمد
+رقم حساب: xxxx
+محفظة بال باي - محمد
+رقم: xxxx"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="setting-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-3.314 0-6 1.343-6 3v5h12v-5c0-1.657-2.686-3-6-3zm0 0V5m-3 0h6"/>
+                </svg>
+              </div>
+              <div class="min-w-0 w-full">
+                <div class="setting-title">إضافة حساب للتحويل</div>
+                <div class="grid grid-cols-1 gap-3 mt-2">
+                  <input type="text" id="accountTypeInput" class="w-full p-3 bg-gray-50 rounded-xl border text-sm outline-none" placeholder="نوع الحساب أو اسم الجهة">
+                  <input type="text" id="accountOwnerInput" class="w-full p-3 bg-gray-50 rounded-xl border text-sm outline-none" placeholder="اسم صاحب الحساب">
+                </div>
+                <button id="addAccountBtn" type="button" class="w-full mt-3 bg-blue-100 text-blue-800 py-3 rounded-2xl font-bold">إضافة حساب</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="setting-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 8h14M5 16h14"/>
+                </svg>
+              </div>
+              <div class="min-w-0 w-full">
+                <div class="setting-title">الحسابات المتاحة للتحويل</div>
+                <div id="accountsList" class="space-y-3 mt-3"></div>
+              </div>
+            </div>
+          </div>
+
+          <a href="Payed2.html" class="tools-btn block text-center">أدوات PDF وExcel والصور والنسخة الاحتياطية</a>
+          <button id="saveSettingsBtn" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold shadow-lg mt-4">حفظ الإعدادات</button>
+          <button id="logoutBtn" class="logout-btn mt-3">تسجيل الخروج</button>
+
+          <div class="rights-box">
+            هذا التطبيق حقوق @انور الندا<br>
+            وأي تداول مجاني له في رقبتك ليوم الدين
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="loginRoot" class="login-shell hidden-force">
+    <div class="glass-card w-full max-w-md p-6">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 mx-auto rounded-2xl btn-gradient flex items-center justify-center text-white text-2xl font-extrabold shadow-lg">₪</div>
+        <h2 class="text-2xl font-extrabold text-blue-900 mt-4">تسجيل الدخول</h2>
+        <p class="text-sm text-gray-500 mt-2">أدخل مفتاح الدخول للمتابعة</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-1">مفتاح الدخول</label>
+          <input id="licenseKeyInput" type="text" class="w-full p-3 bg-gray-50 rounded-xl border-transparent focus:border-blue-500 outline-none" placeholder="أدخل المفتاح...">
+        </div>
+
+        <div id="loginStatusBox" class="hidden text-sm rounded-xl p-3"></div>
+
+        <button id="loginBtn" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold shadow-lg">دخول</button>
+
+        <div class="whatsapp-box">
+          لشراء المفتاح يرجى مراسلتنا واتساب<br>
+          970597603119
+        </div>
+
+        <div class="rights-box">
+          هذا التطبيق حقوق @انور الندا<br>
+          وأي تداول مجاني له في رقبتك ليوم الدين
+        </div>
+
+        <div class="text-xs text-center text-gray-400">
+          أول تفعيل يحتاج اتصال إنترنت، وبعدها يتم حفظ الحالة محليًا
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="expiredRoot" class="login-shell hidden-force">
+    <div class="glass-card w-full max-w-md p-6 text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-red-100 flex items-center justify-center mb-4">
+        <span class="text-3xl text-red-600">!</span>
+      </div>
+      <h2 id="expiredTitle" class="text-2xl font-extrabold text-red-700 mb-3">انتهى اشتراكك</h2>
+      <p id="expiredText" class="text-sm text-gray-600 leading-8 mb-5">يرجى تجديد الاشتراك أو إدخال مفتاح صالح.</p>
+      <button id="goToLoginBtn" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold shadow-lg">العودة لتسجيل الدخول</button>
+    </div>
+  </div>
+
+  <div id="detailsModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl modal-animate modal-card">
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-lg font-bold">تفاصيل العملية</h3>
+          <button id="closeModalBtn" class="text-gray-400">✕</button>
+        </div>
+        <div id="modalContent" class="space-y-3 text-sm"></div>
+
+        <div class="mt-5">
+          <button id="openMessageFromDetailsBtn" class="w-full py-3 rounded-xl bg-green-100 text-green-700 font-bold">إنشاء رسالة</button>
+        </div>
+
+        <div class="mt-6">
+          <label class="block text-xs font-semibold text-gray-500 mb-2">تغيير الحالة</label>
+          <div class="flex gap-2">
+            <button class="change-status-btn flex-1 bg-green-100 text-green-700 py-2 rounded-lg text-xs font-bold" data-status="تم الدفع">تم الدفع</button>
+            <button class="change-status-btn flex-1 bg-yellow-100 text-yellow-700 py-2 rounded-lg text-xs font-bold" data-status="قيد المراجعة">مراجعة</button>
+            <button class="change-status-btn flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-xs font-bold" data-status="لم يدفع">لم يدفع</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="purchaseDetailsModal" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl modal-animate modal-card">
+      <div class="p-6">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-lg font-bold">تفاصيل الشراء</h3>
+          <button id="closePurchaseModalBtn" class="text-gray-400">✕</button>
+        </div>
+        <div id="purchaseModalContent" class="space-y-3 text-sm"></div>
+
+        <div class="mt-6">
+          <label class="block text-xs font-semibold text-gray-500 mb-2">تغيير الحالة</label>
+          <div class="flex gap-2">
+            <button class="change-purchase-status-btn flex-1 bg-teal-100 text-teal-700 py-2 rounded-lg text-xs font-bold" data-status="تم دفعها">تم دفعها</button>
+            <button class="change-purchase-status-btn flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-xs font-bold" data-status="دين">دين</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="messageModal" class="fixed inset-0 bg-black/50 hidden z-[80] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 modal-animate modal-card">
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="text-lg font-bold">نص الرسالة</h3>
+        <button id="closeMessageModalBtn" class="text-gray-400 text-xl leading-none">✕</button>
+      </div>
+
+      <div id="messagePreview" class="message-preview-box"></div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3">
+        <button id="copyMessageBtn" class="copy-btn">نسخ الرسالة</button>
+        <button id="sendMessageBtn" class="send-btn">إرسال عبر واتساب</button>
+        <button id="sendSmsBtn" class="sms-btn">إرسال عبر الرسائل</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sendChoiceModal" class="fixed inset-0 bg-black/50 hidden z-[90] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 modal-animate modal-card">
+      <div class="flex justify-between items-start mb-4">
+        <h3 class="text-lg font-bold">اختيار طريقة الإرسال</h3>
+        <button id="closeSendChoiceModalBtn" class="text-gray-400 text-xl leading-none">✕</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-2">الطريقة</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button id="chooseWhatsAppBtn" class="send-btn">واتساب</button>
+            <button id="chooseSmsBtn" class="sms-btn">رسائل</button>
+          </div>
+        </div>
+
+        <div id="whatsPrefixWrap">
+          <label class="block text-xs font-semibold text-gray-500 mb-2">مقدمة رقم واتساب</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="prefix-choice-btn py-3 rounded-xl bg-green-100 text-green-700 font-bold" data-prefix="970">970</button>
+            <button class="prefix-choice-btn py-3 rounded-xl bg-green-100 text-green-700 font-bold" data-prefix="972">972</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap">
+    <div id="toast" class="toast">تم النسخ</div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-analytics.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCnLAY7zQyBy7gUuL9wszt9aEhiJgvRmxI",
+      authDomain: "shop-d52dc.firebaseapp.com",
+      databaseURL: "https://shop-d52dc-default-rtdb.firebaseio.com",
+      projectId: "shop-d52dc",
+      storageBucket: "shop-d52dc.appspot.com",
+      messagingSenderId: "97580537866",
+      appId: "1:97580537866:web:abc46e5a2f527b6300a7f3",
+      measurementId: "G-956RQMBP42"
+    };
+
+    const firebaseApp = initializeApp(firebaseConfig);
+    getAnalytics(firebaseApp);
+    const firebaseDb = getDatabase(firebaseApp);
+
+    let db;
+    const DB_NAME = "PaymentManagerDB";
+    const SALES_STORE = "sales";
+    const PURCHASES_STORE = "purchases";
+    const SETTLEMENTS_STORE = "settlements";
+    const SETTINGS_KEY = "storeSettings";
+    const ACCOUNTS_KEY = "transferAccounts";
+    const LICENSE_CACHE_KEY = "cachedUserLicenseState_v1";
+    const INSTALLATION_ID_KEY = "appInstallationId_v1";
+
+    let currentProfileData = null;
+    let currentPage = "home";
+    let currentLogStatusFilter = "";
+    let currentRecordMode = "sale";
+    let activeModalId = null;
+    let licenseCountdownInterval = null;
+    let currentMessageText = "";
+    let currentMessagePhone = "";
+    let selectedSaleId = null;
+    let selectedPurchaseId = null;
+    let editingSaleId = null;
+    let editingPurchaseId = null;
+    let currentDetailPayment = null;
+    let isRenderingLog = false;
+
+    function qs(id) { return document.getElementById(id); }
+    function nowMs() { return Date.now(); }
+
+    function generateRandomId() {
+      return "id_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function getInstallationId() {
+      let id = localStorage.getItem(INSTALLATION_ID_KEY);
+      if (!id) {
+        id = generateRandomId();
+        localStorage.setItem(INSTALLATION_ID_KEY, id);
+      }
+      return id;
+    }
+
+    function getCachedLicenseState() {
+      const raw = localStorage.getItem(LICENSE_CACHE_KEY);
+      if (!raw) return null;
+      try { return JSON.parse(raw); } catch { return null; }
+    }
+
+    function saveCachedLicenseState(data) {
+      localStorage.setItem(LICENSE_CACHE_KEY, JSON.stringify(data));
+    }
+
+    function clearCachedLicenseState() {
+      localStorage.removeItem(LICENSE_CACHE_KEY);
+    }
+
+    function formatRemaining(ms) {
+      if (ms <= 0) return "0 دقيقة";
+      const minute = 60 * 1000, hour = 60 * minute, day = 24 * hour, month = 30 * day, year = 365 * day;
+      const years = Math.floor(ms / year); if (years > 0) return `${years} سنة`;
+      const months = Math.floor(ms / month); if (months > 0) return `${months} شهر`;
+      const days = Math.floor(ms / day); if (days > 0) return `${days} يوم`;
+      const hours = Math.floor(ms / hour); if (hours > 0) return `${hours} ساعة`;
+      const minutes = Math.max(1, Math.floor(ms / minute));
+      return `${minutes} دقيقة`;
+    }
+
+    function isLicenseExpired(state) {
+      if (!state) return true;
+      if (state.isPermanent) return false;
+      if (!state.expiresAt) return true;
+      return nowMs() >= Number(state.expiresAt);
+    }
+
+    function getLicenseStatusText(state) {
+      if (!state) return "غير معروف";
+      if (state.isPermanent) return "اشتراك دائم";
+      if (!state.expiresAt) return "بدون مدة محددة";
+      return `ينتهي خلال ${formatRemaining(Number(state.expiresAt) - nowMs())}`;
+    }
+
+    function getLicenseInlineText(state) {
+      if (!state) return "";
+      if (state.isPermanent) return "دائم";
+      if (state.planType === "trial") return `تجريبي • ${formatRemaining(Number(state.expiresAt) - nowMs())}`;
+      if (!state.expiresAt) return "بدون مدة";
+      return `مؤقت • ${formatRemaining(Number(state.expiresAt) - nowMs())}`;
+    }
+
+    function renderLicenseInlineBadge() {
+      const badge = qs("licenseInlineBadge");
+      const badgeText = qs("licenseInlineBadgeText");
+      const state = getCachedLicenseState();
+
+      if (!state) {
+        badge.classList.add("hidden-force");
+        return;
+      }
+
+      badge.classList.remove("hidden-force");
+      badge.classList.remove("license-inline-trial", "license-inline-temp", "license-inline-permanent");
+
+      if (state.isPermanent) badge.classList.add("license-inline-permanent");
+      else if (state.planType === "trial") badge.classList.add("license-inline-trial");
+      else badge.classList.add("license-inline-temp");
+
+      badgeText.textContent = getLicenseInlineText(state);
+    }
+
+    function renderSettingsLicenseStatus() {
+      const state = getCachedLicenseState();
+      const el = qs("settingsLicenseStatus");
+      if (!el) return;
+      el.textContent = getLicenseStatusText(state);
+    }
+
+    function renderLicenseUI() {
+      renderLicenseInlineBadge();
+      renderSettingsLicenseStatus();
+    }
+
+    function setShell(target) {
+      qs("appRoot").classList.add("hidden-force");
+      qs("loginRoot").classList.add("hidden-force");
+      qs("expiredRoot").classList.add("hidden-force");
+
+      if (target === "app") qs("appRoot").classList.remove("hidden-force");
+      if (target === "login") qs("loginRoot").classList.remove("hidden-force");
+      if (target === "expired") qs("expiredRoot").classList.remove("hidden-force");
+    }
+
+    function showToast(message) {
+      const toast = qs("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function showLoginStatus(message, type = "info") {
+      const box = qs("loginStatusBox");
+      box.classList.remove("hidden");
+      box.textContent = message;
+      box.className = "text-sm rounded-xl p-3";
+      if (type === "error") box.classList.add("bg-red-50", "text-red-700", "border", "border-red-200");
+      else if (type === "success") box.classList.add("bg-green-50", "text-green-700", "border", "border-green-200");
+      else box.classList.add("bg-blue-50", "text-blue-700", "border", "border-blue-200");
+    }
+
+    function clearLoginStatus() {
+      const box = qs("loginStatusBox");
+      box.classList.add("hidden");
+      box.textContent = "";
+    }
+
+    function showExpiredScreen(state) {
+      stopLicenseCountdown();
+      const isTrial = state?.planType === "trial";
+      qs("expiredTitle").textContent = isTrial ? "انتهت الفترة التجريبية" : "انتهى اشتراكك";
+      qs("expiredText").textContent = isTrial
+        ? "انتهت الفترة التجريبية لهذا التطبيق. يرجى إدخال مفتاح جديد للمتابعة."
+        : "انتهت صلاحية الاشتراك. يرجى إدخال مفتاح صالح للمتابعة.";
+      setShell("expired");
+    }
+
+    async function validateLicenseOnline(key, countLogin = true) {
+      const trimmed = String(key || "").trim();
+      if (!trimmed) return { ok: false, message: "يرجى إدخال المفتاح" };
+      if (!navigator.onLine) return { ok: false, message: "يلزم توفر الإنترنت لأول مرة للتحقق من المفتاح" };
+
+      const installationId = getInstallationId();
+
+      try {
+        const licenseRef = ref(firebaseDb, `licenses/${trimmed}`);
+        const snapshot = await get(licenseRef);
+
+        if (!snapshot.exists()) return { ok: false, message: "المفتاح غير صالح" };
+
+        const remoteLicense = snapshot.val() || {};
+        if (remoteLicense.status !== "active") return { ok: false, message: "هذا المفتاح معطل" };
+
+        const isPermanent = !!remoteLicense.isPermanent;
+        const expiresAt = isPermanent ? null : Number(remoteLicense.expiresAt || 0);
+
+        if (!isPermanent && (!expiresAt || Date.now() >= expiresAt)) {
+          return { ok: false, message: "المفتاح منتهي" };
+        }
+
+        const loginCount = Number(remoteLicense.loginCount || 0);
+        const maxDevices = Number(remoteLicense.maxDevices || 1);
+
+        if (countLogin && loginCount >= maxDevices) {
+          return { ok: false, message: "تم استهلاك عدد مرات الدخول المسموح لهذا المفتاح" };
+        }
+
+        if (countLogin) {
+          const historyRef = ref(firebaseDb, `licenses/${trimmed}/loginHistory/login_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`);
+          await update(ref(firebaseDb, `licenses/${trimmed}`), {
+            loginCount: loginCount + 1,
+            lastLoginAt: Date.now(),
+            lastInstallationId: installationId
+          });
+
+          await update(historyRef, {
+            installationId,
+            loggedAt: Date.now()
+          });
+        } else {
+          await update(ref(firebaseDb, `licenses/${trimmed}`), {
+            lastValidatedAt: Date.now()
+          });
+        }
+
+        const finalLoginCount = countLogin ? loginCount + 1 : loginCount;
+
+        const license = {
+          key: trimmed,
+          planType: remoteLicense.planType || "regular",
+          isPermanent,
+          expiresAt,
+          issuedAt: remoteLicense.issuedAt || Date.now(),
+          activatedAt: remoteLicense.issuedAt || Date.now(),
+          cachedAt: Date.now(),
+          status: remoteLicense.status || "active",
+          installationId,
+          maxDevices,
+          loginCount: finalLoginCount,
+          lastValidatedAt: Date.now()
+        };
+
+        license.isExpired = isLicenseExpired(license);
+        if (license.isExpired) return { ok: false, license, message: "المفتاح منتهي" };
+
+        return { ok: true, license, message: "تم التحقق بنجاح" };
+      } catch (error) {
+        console.error("Firebase license validation error:", error);
+        return { ok: false, message: "تعذر الاتصال بقاعدة البيانات" };
+      }
+    }
+async function releaseLoginCountOnline() {
+      const state = getCachedLicenseState();
+      if (!state?.key || !navigator.onLine) return false;
+
+      try {
+        const licenseRef = ref(firebaseDb, `licenses/${state.key}`);
+        const snapshot = await get(licenseRef);
+        if (!snapshot.exists()) return false;
+
+        const remoteLicense = snapshot.val() || {};
+        const currentCount = Math.max(0, Number(remoteLicense.loginCount || 0) - 1);
+        await update(licenseRef, { loginCount: currentCount });
+        return true;
+      } catch (error) {
+        console.error("Release login count error:", error);
+        return false;
+      }
+    }
+
+    async function refreshLicenseStateIfOnline() {
+      const state = getCachedLicenseState();
+      if (!state || !state.key || !navigator.onLine) return;
+
+      const result = await validateLicenseOnline(state.key, false);
+
+      if (!result.ok) {
+        if (result.message === "هذا المفتاح معطل" || result.message === "المفتاح منتهي") {
+          const expiredState = { ...state, isExpired: true, cachedAt: Date.now() };
+          saveCachedLicenseState(expiredState);
+          renderLicenseUI();
+          showExpiredScreen(expiredState);
+        }
+        return;
+      }
+
+      saveCachedLicenseState(result.license);
+      renderLicenseUI();
+      startLicenseCountdown();
+    }
+
+    function stopLicenseCountdown() {
+      if (licenseCountdownInterval) {
+        clearInterval(licenseCountdownInterval);
+        licenseCountdownInterval = null;
+      }
+    }
+
+    function startLicenseCountdown() {
+      stopLicenseCountdown();
+
+      const tick = () => {
+        const state = getCachedLicenseState();
+        if (!state) return;
+
+        state.isExpired = isLicenseExpired(state);
+        saveCachedLicenseState(state);
+        renderLicenseUI();
+
+        if (state.isExpired) showExpiredScreen(state);
+      };
+
+      tick();
+      licenseCountdownInterval = setInterval(tick, 1000);
+    }
+
+    function bootstrapLicenseFlow() {
+      const state = getCachedLicenseState();
+      if (!state) {
+        setShell("login");
+        return;
+      }
+
+      state.isExpired = isLicenseExpired(state);
+      saveCachedLicenseState(state);
+
+      if (state.isExpired) {
+        showExpiredScreen(state);
+        return;
+      }
+
+      renderLicenseUI();
+      setShell("app");
+      startLicenseCountdown();
+      refreshLicenseStateIfOnline();
+    }
+
+    const request = indexedDB.open(DB_NAME, 4);
+
+    request.onupgradeneeded = (e) => {
+      db = e.target.result;
+
+      if (!db.objectStoreNames.contains(SALES_STORE)) {
+        const sales = db.createObjectStore(SALES_STORE, { keyPath: "id", autoIncrement: true });
+        sales.createIndex("name", "name", { unique: false });
+        sales.createIndex("date", "date", { unique: false });
+        sales.createIndex("phone", "phone", { unique: false });
+        sales.createIndex("channel", "channel", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(PURCHASES_STORE)) {
+        const purchases = db.createObjectStore(PURCHASES_STORE, { keyPath: "id", autoIncrement: true });
+        purchases.createIndex("vendorName", "vendorName", { unique: false });
+        purchases.createIndex("date", "date", { unique: false });
+        purchases.createIndex("status", "status", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(SETTLEMENTS_STORE)) {
+        const settlements = db.createObjectStore(SETTLEMENTS_STORE, { keyPath: "id", autoIncrement: true });
+        settlements.createIndex("customerName", "customerName", { unique: false });
+        settlements.createIndex("customerPhone", "customerPhone", { unique: false });
+        settlements.createIndex("date", "date", { unique: false });
+      }
+    };
+
+    request.onsuccess = (e) => {
+      db = e.target.result;
+      window.history.replaceState({ page: "home" }, "", "#home");
+      bindEvents();
+      loadSettingsToInputs();
+      renderAccountsList();
+      populateTransferAccountsSelect();
+      populatePurchaseAccountsSelect();
+      populateSettlementAccountsSelect();
+      updateDashboard();
+      bootstrapLicenseFlow();
+    };
+
+    request.onerror = () => alert("حدث خطأ في فتح قاعدة البيانات");
+
+    function bindEvents() {
+      qs("backBtn").addEventListener("click", goBackHandler);
+      qs("settingsBtn").addEventListener("click", () => navigateTo("settings", "الإعدادات"));
+      qs("helpBtn").addEventListener("click", () => navigateTo("help", "شرح التطبيق"));
+
+      qs("tabSalesBtn").addEventListener("click", () => setHomeMode("sale"));
+      qs("tabPurchasesBtn").addEventListener("click", () => setHomeMode("purchase"));
+
+      qs("todayCard").addEventListener("click", () => {
+        currentLogStatusFilter = "";
+        navigateTo("fullLog", "السجل الكامل");
+      });
+
+      qs("paidCard").addEventListener("click", () => {
+        currentLogStatusFilter = currentRecordMode === "sale" ? "تم الدفع" : "تم دفعها";
+        navigateTo("fullLog", "سجل مكتمل");
+      });
+
+      qs("reviewCard").addEventListener("click", () => {
+        currentLogStatusFilter = currentRecordMode === "sale" ? "قيد المراجعة" : "";
+        navigateTo("fullLog", currentRecordMode === "sale" ? "سجل المراجعة" : "السجل");
+      });
+
+      qs("unpaidCard").addEventListener("click", () => {
+        currentLogStatusFilter = currentRecordMode === "sale" ? "لم يدفع" : "دين";
+        navigateTo("fullLog", "سجل الديون");
+      });
+
+      qs("addPaymentBtn").addEventListener("click", () => {
+        resetPaymentForm();
+        editingSaleId = null;
+        navigateTo("addPayment", "إضافة بيع");
+      });
+
+      qs("addPurchaseBtn").addEventListener("click", () => {
+        resetPurchaseForm();
+        editingPurchaseId = null;
+        navigateTo("addPurchase", "إضافة مشتريات");
+      });
+
+      qs("openDebtsBtn").addEventListener("click", () => navigateTo("debts", "قسم الديون"));
+      qs("openReportsBtn").addEventListener("click", () => navigateTo("reports", "التقارير والأرصدة"));
+      qs("showMoreBtn").addEventListener("click", () => navigateTo("fullLog", "السجل الكامل"));
+
+      qs("recordTypeFilter").addEventListener("change", loadFullLog);
+      qs("timeFilter").addEventListener("change", loadFullLog);
+      qs("statusFilter").addEventListener("change", loadFullLog);
+      qs("channelFilter").addEventListener("change", loadFullLog);
+      qs("logSearch").addEventListener("input", loadFullLog);
+
+      qs("profileChannelFilter").addEventListener("change", () => currentProfileData && openUserProfile(currentProfileData.name, currentProfileData.phone, false));
+      qs("profileStatusFilter").addEventListener("change", () => currentProfileData && openUserProfile(currentProfileData.name, currentProfileData.phone, false));
+
+      qs("custName").addEventListener("input", (e) => handleCustomerNameInput(e.target.value));
+      qs("vendorName").addEventListener("input", (e) => handleVendorNameInput(e.target.value));
+
+      qs("savePaymentBtn").addEventListener("click", saveSale);
+      qs("savePurchaseBtn").addEventListener("click", savePurchase);
+      qs("saveSettlementBtn").addEventListener("click", saveSettlement);
+
+      qs("addAccountBtn").addEventListener("click", addTransferAccount);
+      qs("saveSettingsBtn").addEventListener("click", saveSettings);
+      qs("logoutBtn").addEventListener("click", handleLogout);
+
+      qs("closeModalBtn").addEventListener("click", () => closeModalById("detailsModal"));
+      qs("closePurchaseModalBtn").addEventListener("click", () => closeModalById("purchaseDetailsModal"));
+      qs("closeMessageModalBtn").addEventListener("click", closeMessageModal);
+
+      qs("copyMessageBtn").addEventListener("click", copyCurrentMessage);
+      qs("sendMessageBtn").addEventListener("click", () => openSendChoiceModal("whatsapp"));
+      qs("sendSmsBtn").addEventListener("click", sendCurrentMessageViaSms);
+      qs("openMessageFromDetailsBtn").addEventListener("click", generateMessageFromCurrentDetail);
+      qs("generateCustomerMessageBtn").addEventListener("click", generateCustomerMessageFromProfile);
+
+      qs("closeSendChoiceModalBtn").addEventListener("click", closeSendChoiceModal);
+      qs("chooseSmsBtn").addEventListener("click", sendCurrentMessageViaSms);
+
+      document.querySelectorAll(".prefix-choice-btn").forEach(btn => {
+        btn.addEventListener("click", () => sendCurrentMessageViaWhatsApp(btn.dataset.prefix));
+      });
+
+      document.querySelectorAll(".change-status-btn").forEach(btn => {
+        btn.addEventListener("click", () => updateSaleStatus(btn.dataset.status));
+      });
+
+      document.querySelectorAll(".change-purchase-status-btn").forEach(btn => {
+        btn.addEventListener("click", () => updatePurchaseStatus(btn.dataset.status));
+      });
+
+      qs("loginBtn").addEventListener("click", handleLogin);
+      qs("licenseKeyInput").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleLogin();
+      });
+
+      qs("goToLoginBtn").addEventListener("click", () => {
+        clearCachedLicenseState();
+        stopLicenseCountdown();
+        setShell("login");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#custName") && !e.target.closest("#nameSuggestions")) {
+          qs("nameSuggestions").classList.add("hidden");
+        }
+        if (!e.target.closest("#vendorName") && !e.target.closest("#vendorSuggestions")) {
+          qs("vendorSuggestions").classList.add("hidden");
+        }
+        handleModalOutsideClick(e);
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeActiveModal();
+      });
+
+      window.addEventListener("online", refreshLicenseStateIfOnline);
+
+      window.onpopstate = (event) => {
+        if (activeModalId) {
+          closeActiveModal();
+          window.history.pushState({ page: currentPage }, "", "#" + currentPage);
+          return;
+        }
+        const page = event.state?.page || "home";
+        setPage(page, getTitle(page));
+      };
+    }
+
+    function setHomeMode(mode) {
+      currentRecordMode = mode;
+      qs("tabSalesBtn").classList.toggle("active", mode === "sale");
+      qs("tabPurchasesBtn").classList.toggle("active", mode === "purchase");
+      updateDashboard();
+    }
+
+    async function handleLogin() {
+      const key = qs("licenseKeyInput").value.trim();
+      clearLoginStatus();
+
+      qs("loginBtn").disabled = true;
+      qs("loginBtn").textContent = "جارٍ التحقق...";
+
+      try {
+        const result = await validateLicenseOnline(key, true);
+
+        if (!result.ok) {
+          showLoginStatus(result.message || "تعذر التحقق من المفتاح", "error");
+          return;
+        }
+
+        saveCachedLicenseState(result.license);
+        showLoginStatus("تم تسجيل الدخول بنجاح", "success");
+        renderLicenseUI();
+        setShell("app");
+        startLicenseCountdown();
+      } finally {
+        qs("loginBtn").disabled = false;
+        qs("loginBtn").textContent = "دخول";
+      }
+    }
+
+    async function handleLogout() {
+      qs("logoutBtn").disabled = true;
+      qs("logoutBtn").textContent = "جارٍ تسجيل الخروج...";
+
+      try {
+        const released = await releaseLoginCountOnline();
+
+        if (!released && navigator.onLine) {
+          showToast("تعذر تحديث عداد الدخول");
+          return;
+        }
+
+        clearCachedLicenseState();
+        stopLicenseCountdown();
+        setShell("login");
+        showToast("تم تسجيل الخروج");
+      } finally {
+        qs("logoutBtn").disabled = false;
+        qs("logoutBtn").textContent = "تسجيل الخروج";
+      }
+    }
+
+    function getStoreSettings() {
+      const saved = localStorage.getItem(SETTINGS_KEY);
+      if (!saved) return { storeName: "", paymentInfo: "" };
+      try { return JSON.parse(saved); } catch { return { storeName: "", paymentInfo: "" }; }
+    }
+
+    function getTransferAccounts() {
+      const saved = localStorage.getItem(ACCOUNTS_KEY);
+      if (!saved) return [];
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTransferAccounts(accounts) {
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts || []));
+    }
+
+    function addTransferAccount() {
+      const type = qs("accountTypeInput").value.trim();
+      const owner = qs("accountOwnerInput").value.trim();
+
+      if (!type || !owner) {
+        alert("يرجى إدخال نوع الحساب واسم صاحبه");
+        return;
+      }
+
+      const accounts = getTransferAccounts();
+      const exists = accounts.some(acc => acc.type === type && acc.owner === owner);
+      if (exists) {
+        alert("هذا الحساب موجود مسبقاً");
+        return;
+      }
+
+      accounts.push({ id: Date.now(), type, owner });
+      saveTransferAccounts(accounts);
+      qs("accountTypeInput").value = "";
+      qs("accountOwnerInput").value = "";
+      renderAccountsList();
+      populateTransferAccountsSelect();
+      populatePurchaseAccountsSelect();
+      populateSettlementAccountsSelect();
+      updateReports();
+      showToast("تمت إضافة الحساب");
+    }
+
+    function deleteTransferAccount(accountId) {
+      const accounts = getTransferAccounts().filter(acc => acc.id !== accountId);
+      saveTransferAccounts(accounts);
+      renderAccountsList();
+      populateTransferAccountsSelect();
+      populatePurchaseAccountsSelect();
+      populateSettlementAccountsSelect();
+      updateReports();
+      showToast("تم حذف الحساب");
+    }
+
+    function renderAccountsList() {
+      const container = qs("accountsList");
+      const accounts = getTransferAccounts();
+      container.innerHTML = "";
+
+      if (!accounts.length) {
+        container.innerHTML = `<div class="text-sm text-gray-500 text-center bg-gray-50 rounded-xl p-4">لا توجد حسابات مضافة</div>`;
+        return;
+      }
+
+      accounts.forEach(account => {
+        const item = document.createElement("div");
+        item.className = "account-item";
+        item.innerHTML = `
+          <div class="min-w-0">
+            <div class="account-badge">${escapeHtml(account.type)}</div>
+            <div class="font-bold text-gray-800 line-clamp-1">${escapeHtml(account.owner)}</div>
+          </div>
+          <button class="mini-delete-btn">حذف</button>
+        `;
+        item.querySelector("button").addEventListener("click", () => deleteTransferAccount(account.id));
+        container.appendChild(item);
+      });
+    }
+
+    function populateTransferAccountsSelect(selectedValue = "") {
+      const select = qs("transferAccountSelect");
+      if (!select) return;
+
+      const accounts = getTransferAccounts();
+      select.innerHTML = `<option value="">اختر الحساب</option>`;
+
+      accounts.forEach(account => {
+        const option = document.createElement("option");
+        option.value = `${account.type}|||${account.owner}`;
+        option.textContent = `${account.type} - ${account.owner}`;
+        if (option.value === selectedValue) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function populatePurchaseAccountsSelect(selectedValue = "") {
+      const select = qs("purchaseAccountSelect");
+      if (!select) return;
+
+      const accounts = getTransferAccounts();
+      select.innerHTML = `<option value="">اختر الحساب</option>`;
+
+      accounts.forEach(account => {
+        const option = document.createElement("option");
+        option.value = `${account.type}|||${account.owner}`;
+        option.textContent = `${account.type} - ${account.owner}`;
+        if (option.value === selectedValue) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function populateSettlementAccountsSelect(selectedValue = "") {
+      const select = qs("settlementAccountSelect");
+      if (!select) return;
+
+      const accounts = getTransferAccounts();
+      select.innerHTML = `<option value="">اختر الحساب</option>`;
+
+      accounts.forEach(account => {
+        const option = document.createElement("option");
+        option.value = `${account.type}|||${account.owner}`;
+        option.textContent = `${account.type} - ${account.owner}`;
+        if (option.value === selectedValue) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function saveSettings() {
+      const storeName = qs("storeNameInput").value.trim();
+      const paymentInfo = qs("paymentInfoInput").value.trim();
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify({ storeName, paymentInfo }));
+      showToast("تم حفظ الإعدادات");
+    }
+
+    function loadSettingsToInputs() {
+      const settings = getStoreSettings();
+      qs("storeNameInput").value = settings.storeName || "";
+      qs("paymentInfoInput").value = settings.paymentInfo || "";
+      renderAccountsList();
+      populateTransferAccountsSelect();
+      populatePurchaseAccountsSelect();
+      populateSettlementAccountsSelect();
+      renderSettingsLicenseStatus();
+    }
+
+    function getTitle(id) {
+      return {
+        home: "الرئيسية",
+        fullLog: "السجل الكامل",
+        addPayment: editingSaleId ? "تعديل بيع" : "إضافة بيع",
+        addPurchase: editingPurchaseId ? "تعديل مشتريات" : "إضافة مشتريات",
+        debts: "قسم الديون",
+        reports: "التقارير والأرصدة",
+        userProfile: "سجل العميل",
+        settings: "الإعدادات",
+        help: "شرح التطبيق"
+      }[id] || "مدير المدفوعات";
+    }
+
+    function hideAllPages() {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    }
+
+    function setPage(pageId, title = "") {
+      hideAllPages();
+      const el = qs(pageId + "Page");
+      if (el) el.classList.add("active");
+      qs("pageTitle").innerText = title || getTitle(pageId);
+      currentPage = pageId;
+
+      if (pageId === "home") updateDashboard();
+      if (pageId === "fullLog") {
+        qs("statusFilter").value = currentLogStatusFilter;
+        loadFullLog();
+      }
+      if (pageId === "settings") loadSettingsToInputs();
+      if (pageId === "debts") loadDebtsPage();
+      if (pageId === "reports") updateReports();
+    }
+
+    function navigateTo(pageId, title = "") {
+      setPage(pageId, title);
+      window.history.pushState({ page: pageId }, "", "#" + pageId);
+    }
+
+    function goBackHandler() {
+      if (activeModalId) {
+        closeActiveModal();
+        return;
+      }
+      if (currentPage === "home") return;
+      window.history.back();
+    }
+
+    function transactionGetAll(storeName) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], "readonly");
+        const store = tx.objectStore(storeName);
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function transactionGetById(storeName, id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction([storeName], "readonly");
+        const store = tx.objectStore(storeName);
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getAllSales() {
+      return await transactionGetAll(SALES_STORE);
+    }
+
+    async function getAllPurchases() {
+      return await transactionGetAll(PURCHASES_STORE);
+    }
+
+    async function getAllSettlements() {
+      return await transactionGetAll(SETTLEMENTS_STORE);
+    }
+
+    async function getAllRecords() {
+      const [sales, purchases, settlements] = await Promise.all([
+        getAllSales(),
+        getAllPurchases(),
+        getAllSettlements()
+      ]);
+
+      const salesTagged = sales.map(item => ({ ...item, recordType: "sale" }));
+      const purchasesTagged = purchases.map(item => ({ ...item, recordType: "purchase" }));
+      const settlementsTagged = settlements.map(item => ({
+        ...item,
+        recordType: "settlement",
+        status: "سداد",
+        amount: Number(item.amount || 0)
+      }));
+
+      return [...salesTagged, ...purchasesTagged, ...settlementsTagged];
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatMoney(val) {
+      return `${Number(val || 0).toFixed(2)} ₪`;
+    }
+
+    function formatDayMonth(dateValue) {
+      const date = new Date(dateValue);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      return `${day}/${month}`;
+    }
+
+    function buildTransferLine(item) {
+      if (item.transferAccountType && item.transferAccountName) return `${item.transferAccountType} - ${item.transferAccountName}`;
+      if (item.paidFromAccountType && item.paidFromAccountName) return `${item.paidFromAccountType} - ${item.paidFromAccountName}`;
+      if (item.settlementAccountType && item.settlementAccountName) return `${item.settlementAccountType} - ${item.settlementAccountName}`;
+      return "";
+    }
+
+    function getStatusClass(status) {
+      if (status === "تم الدفع") return "status-paid";
+      if (status === "قيد المراجعة") return "status-review";
+      if (status === "لم يدفع") return "status-unpaid";
+      if (status === "تم دفعها") return "status-purchase-paid";
+      if (status === "دين") return "status-purchase-debt";
+      return "status-paid";
+    }
+
+    function getChannelBadge(channel) {
+      return `<span class="channel-badge">${escapeHtml(channel || "مفرق")}</span>`;
+    }
+
+    function resetPaymentForm() {
+      qs("custName").value = "";
+      qs("custPhone").value = "";
+      qs("payAmount").value = "";
+      qs("payItems").value = "";
+      qs("payStatus").value = "تم الدفع";
+      qs("payChannel").value = "جملة";
+      qs("transferAccountSelect").value = "";
+      qs("nameSuggestions").classList.add("hidden");
+      qs("savePaymentBtn").innerText = "حفظ البيع";
+      populateTransferAccountsSelect();
+    }
+
+    function resetPurchaseForm() {
+      qs("vendorName").value = "";
+      qs("purchaseAmount").value = "";
+      qs("purchaseNotes").value = "";
+      qs("purchaseStatus").value = "تم دفعها";
+      qs("purchaseAccountSelect").value = "";
+      qs("vendorSuggestions").classList.add("hidden");
+      qs("savePurchaseBtn").innerText = "حفظ المشتريات";
+      populatePurchaseAccountsSelect();
+    }
+
+    async function saveSale() {
+      const name = qs("custName").value.trim();
+      const phone = qs("custPhone").value.trim();
+      const amount = parseFloat(qs("payAmount").value) || 0;
+      const status = qs("payStatus").value;
+      const channel = qs("payChannel").value;
+      const items = qs("payItems").value.trim();
+      const transferValue = qs("transferAccountSelect").value;
+      const [transferAccountType, transferAccountName] = transferValue ? transferValue.split("|||") : ["", ""];
+
+      if (!name || !amount) {
+        alert("يرجى ملء الاسم والمبلغ");
+        return;
+      }
+
+      const tx = db.transaction([SALES_STORE], "readwrite");
+      const store = tx.objectStore(SALES_STORE);
+
+      if (editingSaleId) {
+        const old = await transactionGetById(SALES_STORE, editingSaleId);
+        if (!old) {
+          alert("تعذر العثور على السجل");
+          return;
+        }
+
+        store.put({
+          ...old,
+          name,
+          phone,
+          amount,
+          status,
+          channel,
+          items,
+          transferAccountType,
+          transferAccountName
+        });
+
+        tx.oncomplete = () => {
+          editingSaleId = null;
+          resetPaymentForm();
+          showToast("تم تعديل البيع");
+          navigateTo("home", "الرئيسية");
+          updateDashboard();
+        };
+        return;
+      }
+      
+store.add({
+        name,
+        phone,
+        amount,
+        status,
+        channel,
+        items,
+        date: new Date().toISOString(),
+        transferAccountType,
+        transferAccountName
+      });
+
+      tx.oncomplete = () => {
+        resetPaymentForm();
+        showToast("تم حفظ البيع");
+        navigateTo("home", "الرئيسية");
+        updateDashboard();
+      };
+    }
+
+    async function savePurchase() {
+      const vendorName = qs("vendorName").value.trim();
+      const amount = parseFloat(qs("purchaseAmount").value) || 0;
+      const status = qs("purchaseStatus").value;
+      const notes = qs("purchaseNotes").value.trim();
+      const accountValue = qs("purchaseAccountSelect").value;
+      const [paidFromAccountType, paidFromAccountName] = accountValue ? accountValue.split("|||") : ["", ""];
+
+      if (!vendorName || !amount) {
+        alert("يرجى إدخال اسم التاجر والمبلغ");
+        return;
+      }
+
+      const tx = db.transaction([PURCHASES_STORE], "readwrite");
+      const store = tx.objectStore(PURCHASES_STORE);
+
+      if (editingPurchaseId) {
+        const old = await transactionGetById(PURCHASES_STORE, editingPurchaseId);
+        if (!old) {
+          alert("تعذر العثور على سجل المشتريات");
+          return;
+        }
+
+        store.put({
+          ...old,
+          vendorName,
+          amount,
+          status,
+          notes,
+          paidFromAccountType,
+          paidFromAccountName
+        });
+
+        tx.oncomplete = () => {
+          editingPurchaseId = null;
+          resetPurchaseForm();
+          showToast("تم تعديل المشتريات");
+          navigateTo("home", "الرئيسية");
+          updateDashboard();
+        };
+        return;
+      }
+
+      store.add({
+        vendorName,
+        amount,
+        status,
+        notes,
+        date: new Date().toISOString(),
+        paidFromAccountType,
+        paidFromAccountName
+      });
+
+      tx.oncomplete = () => {
+        resetPurchaseForm();
+        showToast("تم حفظ المشتريات");
+        navigateTo("home", "الرئيسية");
+        updateDashboard();
+      };
+    }
+
+    async function saveSettlement() {
+      if (!currentProfileData) {
+        alert("افتح سجل الزبون أولاً");
+        return;
+      }
+
+      const amount = parseFloat(qs("settlementAmountInput").value) || 0;
+      const note = qs("settlementNoteInput").value.trim();
+      const accountValue = qs("settlementAccountSelect").value;
+      const [settlementAccountType, settlementAccountName] = accountValue ? accountValue.split("|||") : ["", ""];
+
+      if (!amount || amount <= 0) {
+        alert("يرجى إدخال مبلغ سداد صحيح");
+        return;
+      }
+
+      const { remainingDebt } = await getCustomerDebtSummary(currentProfileData.name, currentProfileData.phone);
+      if (remainingDebt <= 0) {
+        alert("لا يوجد دين متبقٍ على هذا الزبون");
+        return;
+      }
+
+      const finalAmount = Math.min(amount, remainingDebt);
+
+      const tx = db.transaction([SETTLEMENTS_STORE], "readwrite");
+      const store = tx.objectStore(SETTLEMENTS_STORE);
+
+      store.add({
+        customerName: currentProfileData.name,
+        customerPhone: currentProfileData.phone || "",
+        amount: finalAmount,
+        note,
+        date: new Date().toISOString(),
+        settlementAccountType,
+        settlementAccountName
+      });
+
+      tx.oncomplete = async () => {
+        qs("settlementAmountInput").value = "";
+        qs("settlementNoteInput").value = "";
+        qs("settlementAccountSelect").value = "";
+        showToast("تم حفظ السداد");
+        await openUserProfile(currentProfileData.name, currentProfileData.phone, false);
+        updateDashboard();
+      };
+    }
+
+    async function getCustomerDebtSummary(name, phone) {
+      const [sales, settlements] = await Promise.all([getAllSales(), getAllSettlements()]);
+
+      const customerSales = sales.filter(item =>
+        item.name === name || (phone && item.phone === phone)
+      );
+
+      const customerSettlements = settlements.filter(item =>
+        item.customerName === name || (phone && item.customerPhone === phone)
+      );
+
+      const debtSales = customerSales.filter(item => item.status === "لم يدفع" || item.status === "قيد المراجعة");
+      const totalDebtBeforeSettlements = debtSales.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const totalSettled = customerSettlements.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const remainingDebt = Math.max(0, totalDebtBeforeSettlements - totalSettled);
+
+      return {
+        customerSales,
+        customerSettlements,
+        debtSales,
+        totalDebtBeforeSettlements,
+        totalSettled,
+        remainingDebt
+      };
+    }
+
+    async function updateDashboard() {
+      if (!db) return;
+
+      const [sales, purchases, settlements] = await Promise.all([
+        getAllSales(),
+        getAllPurchases(),
+        getAllSettlements()
+      ]);
+
+      const today = new Date().toISOString().split("T")[0];
+
+      const completedSales = sales.filter(x => x.status === "تم الدفع");
+      const customerDebtSales = sales.filter(x => x.status === "لم يدفع" || x.status === "قيد المراجعة");
+      const vendorPaid = purchases.filter(x => x.status === "تم دفعها");
+      const vendorDebts = purchases.filter(x => x.status === "دين");
+
+      const totalCompletedSales = completedSales.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalCustomerDebtRaw = customerDebtSales.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalSettlements = settlements.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalCustomerDebts = Math.max(0, totalCustomerDebtRaw - totalSettlements);
+      const totalVendorPaid = vendorPaid.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalVendorDebts = vendorDebts.reduce((s, x) => s + Number(x.amount || 0), 0);
+
+      const todaySales = completedSales.filter(x => String(x.date || "").startsWith(today)).reduce((s, x) => s + Number(x.amount || 0), 0);
+      const todayPurchases = vendorPaid.filter(x => String(x.date || "").startsWith(today)).reduce((s, x) => s + Number(x.amount || 0), 0);
+      const todaySettlements = settlements.filter(x => String(x.date || "").startsWith(today)).reduce((s, x) => s + Number(x.amount || 0), 0);
+      const todayNet = todaySales - todayPurchases + todaySettlements;
+
+      qs("todayTotal").innerText = formatMoney(todayNet);
+      qs("sumCompletedSales").innerText = formatMoney(totalCompletedSales);
+      qs("sumCustomerDebts").innerText = formatMoney(totalCustomerDebts);
+      qs("sumVendorPaid").innerText = formatMoney(totalVendorPaid);
+      qs("sumVendorDebts").innerText = formatMoney(totalVendorDebts);
+
+      if (currentRecordMode === "sale") {
+        qs("countPaid").innerText = sales.filter(x => x.status === "تم الدفع").length;
+        qs("countReview").innerText = sales.filter(x => x.status === "قيد المراجعة").length;
+        qs("countUnpaid").innerText = sales.filter(x => x.status === "لم يدفع").length;
+      } else {
+        qs("countPaid").innerText = purchases.filter(x => x.status === "تم دفعها").length;
+        qs("countReview").innerText = purchases.length;
+        qs("countUnpaid").innerText = purchases.filter(x => x.status === "دين").length;
+      }
+
+      await renderRecentRecords();
+      await updateReports();
+      renderLicenseUI();
+    }
+
+    async function renderRecentRecords() {
+      const container = qs("recentPayments");
+      container.innerHTML = "";
+
+      const records = await getAllRecords();
+      const latest = [...records].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+
+      if (!latest.length) {
+        container.innerHTML = `<div class="glass-card p-4 text-center text-gray-500 text-sm">لا توجد حركات حتى الآن</div>`;
+        return;
+      }
+
+      latest.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "glass-card p-4 cursor-pointer";
+
+        let title = "---";
+        let sub = "";
+        const account = buildTransferLine(item) || "بدون حساب محدد";
+
+        if (item.recordType === "sale") {
+          title = item.name || "---";
+          sub = "بيع";
+        } else if (item.recordType === "purchase") {
+          title = item.vendorName || "---";
+          sub = "شراء";
+        } else {
+          title = item.customerName || "---";
+          sub = "سداد";
+        }
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-gray-800 line-clamp-1">${escapeHtml(title)}</div>
+              <div class="text-xs text-gray-500 mt-1">${escapeHtml(sub)} - ${new Date(item.date).toLocaleString("ar-EG")}</div>
+              ${item.recordType === "sale" ? getChannelBadge(item.channel || "مفرق") : item.recordType === "purchase" ? `<span class="channel-badge">تاجر</span>` : `<span class="channel-badge">سداد دفعة</span>`}
+              <div class="text-xs text-gray-500 mt-1">${escapeHtml(account)}</div>
+              <div class="text-xs font-semibold mt-2 ${getStatusClass(item.status)} inline-block px-2 py-0.5 rounded-full">${escapeHtml(item.status)}</div>
+            </div>
+            <div class="text-left">
+              <div class="font-bold ${item.recordType === "purchase" ? "text-slate-800" : "text-blue-700"}">${formatMoney(item.amount)}</div>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          if (item.recordType === "sale") {
+            openUserProfile(item.name, item.phone);
+          } else if (item.recordType === "purchase") {
+            showPurchaseDetails(item);
+          } else {
+            openUserProfile(item.customerName, item.customerPhone);
+          }
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function applyTimeFilter(data, timeRange) {
+      const now = new Date();
+      if (timeRange === "all") return data;
+
+      return data.filter(item => {
+        const itemDate = new Date(item.date);
+        if (timeRange === "today") return itemDate.toDateString() === now.toDateString();
+        if (timeRange === "week") return (now - itemDate) < 7 * 24 * 60 * 60 * 1000;
+        if (timeRange === "month") return (now - itemDate) < 30 * 24 * 60 * 60 * 1000;
+        return true;
+      });
+    }
+
+    async function getFilteredLogData() {
+      let data = await getAllRecords();
+
+      const recordType = qs("recordTypeFilter").value;
+      const timeRange = qs("timeFilter").value;
+      const searchTerm = qs("logSearch").value.toLowerCase().trim();
+      const statusTerm = qs("statusFilter").value;
+      const channelTerm = qs("channelFilter").value;
+
+      data = applyTimeFilter(data, timeRange);
+
+      if (recordType !== "all") data = data.filter(item => item.recordType === recordType);
+      if (statusTerm) data = data.filter(item => item.status === statusTerm);
+
+      if (channelTerm) {
+        data = data.filter(item => item.recordType === "sale" && (item.channel || "مفرق") === channelTerm);
+      }
+
+      if (searchTerm) {
+        data = data.filter(item =>
+          String(item.name || "").toLowerCase().includes(searchTerm) ||
+          String(item.phone || "").includes(searchTerm) ||
+          String(item.vendorName || "").toLowerCase().includes(searchTerm) ||
+          String(item.notes || "").toLowerCase().includes(searchTerm) ||
+          String(item.customerName || "").toLowerCase().includes(searchTerm) ||
+          String(item.customerPhone || "").includes(searchTerm)
+        );
+      }
+
+      return data;
+    }
+
+    async function loadFullLog() {
+      if (isRenderingLog) return;
+      isRenderingLog = true;
+
+      try {
+        const data = await getFilteredLogData();
+        const container = qs("logItems");
+        container.innerHTML = "";
+
+        if (!data.length) {
+          container.innerHTML = `<div class="glass-card p-4 text-center text-gray-500 text-sm">لا توجد نتائج</div>`;
+          isRenderingLog = false;
+          return;
+        }
+
+        const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        sorted.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "glass-card p-4";
+
+          if (item.recordType === "sale") {
+            card.innerHTML = `
+              <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-gray-800 line-clamp-1">${escapeHtml(item.name)}</div>
+                  <div class="text-xs text-gray-500">${new Date(item.date).toLocaleString("ar-EG")}</div>
+                  ${getChannelBadge(item.channel || "مفرق")}
+                  <div class="text-xs text-gray-500 mt-1">${escapeHtml(buildTransferLine(item) || "بدون حساب محدد")}</div>
+                  <div class="text-xs text-gray-500 mt-1">${escapeHtml(item.phone || "---")}</div>
+                  <div class="text-xs font-semibold mt-2 ${getStatusClass(item.status)} inline-block px-2 py-0.5 rounded-full">${escapeHtml(item.status)}</div>
+                </div>
+                <div class="text-left">
+                  <div class="font-bold text-blue-700">${formatMoney(item.amount)}</div>
+                  <div class="flex flex-col gap-2 mt-3">
+                    <button class="card-action-btn edit-btn-small">تعديل</button>
+                    <button class="card-action-btn delete-btn-small">حذف</button>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            const btns = card.querySelectorAll("button");
+            btns[0].addEventListener("click", (e) => {
+              e.stopPropagation();
+              editSale(item.id);
+            });
+            btns[1].addEventListener("click", (e) => {
+              e.stopPropagation();
+              deleteSale(item.id);
+            });
+
+            card.addEventListener("click", () => openUserProfile(item.name, item.phone));
+          } else if (item.recordType === "purchase") {
+            card.innerHTML = `
+              <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-gray-800 line-clamp-1">${escapeHtml(item.vendorName)}</div>
+                  <div class="text-xs text-gray-500">${new Date(item.date).toLocaleString("ar-EG")}</div>
+                  <span class="channel-badge">تاجر</span>
+                  <div class="text-xs text-gray-500 mt-1">${escapeHtml(buildTransferLine(item) || "بدون حساب محدد")}</div>
+                  <div class="text-xs text-gray-500 mt-1">${escapeHtml(item.notes || "بدون ملاحظات")}</div>
+                  <div class="text-xs font-semibold mt-2 ${getStatusClass(item.status)} inline-block px-2 py-0.5 rounded-full">${escapeHtml(item.status)}</div>
+                </div>
+                <div class="text-left">
+                  <div class="font-bold text-slate-800">${formatMoney(item.amount)}</div>
+                  <div class="flex flex-col gap-2 mt-3">
+                    <button class="card-action-btn edit-btn-small">تعديل</button>
+                    <button class="card-action-btn delete-btn-small">حذف</button>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            const btns = card.querySelectorAll("button");
+            btns[0].addEventListener("click", (e) => {
+              e.stopPropagation();
+              editPurchase(item.id);
+            });
+            btns[1].addEventListener("click", (e) => {
+              e.stopPropagation();
+              deletePurchase(item.id);
+            });
+
+            card.addEventListener("click", () => showPurchaseDetails(item));
+          } else {
+            card.innerHTML = `
+              <div class="flex justify-between items-start gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-gray-800 line-clamp-1">${escapeHtml(item.customerName)}</div>
+                  <div class="text-xs text-gray-500">${new Date(item.date).toLocaleString("ar-EG")}</div>
+                  <span class="channel-badge">سداد دفعة</span>
+                  <div class="text-xs text-gray-500 mt-1">${escapeHtml(buildTransferLine(item) || "بدون حساب محدد")}</div>
+                  <div class="text-xs text-gray-500 mt-1">${escapeHtml(item.note || "بدون ملاحظة")}</div>
+                  <div class="text-xs font-semibold mt-2 status-paid inline-block px-2 py-0.5 rounded-full">سداد</div>
+                </div>
+                <div class="text-left">
+                  <div class="font-bold text-green-700">${formatMoney(item.amount)}</div>
+                </div>
+              </div>
+            `;
+
+            card.addEventListener("click", () => openUserProfile(item.customerName, item.customerPhone));
+          }
+
+          container.appendChild(card);
+        });
+      } finally {
+        isRenderingLog = false;
+      }
+    }
+
+    async function openUserProfile(name, phone, pushHistory = true) {
+      currentProfileData = { name, phone };
+
+      if (pushHistory) navigateTo("userProfile", "سجل العميل");
+      else setPage("userProfile", "سجل العميل");
+
+      qs("profileName").innerText = name || "---";
+      qs("profilePhone").innerText = phone || "---";
+
+      const {
+        customerSales,
+        customerSettlements,
+        totalDebtBeforeSettlements,
+        totalSettled,
+        remainingDebt
+      } = await getCustomerDebtSummary(name, phone);
+
+      qs("profileTotalDebtBeforeSettlements").innerText = formatMoney(totalDebtBeforeSettlements);
+      qs("profileTotalSettled").innerText = formatMoney(totalSettled);
+      qs("profileRemainingDebt").innerText = formatMoney(remainingDebt);
+
+      const channelTerm = qs("profileChannelFilter").value;
+      const statusTerm = qs("profileStatusFilter").value;
+
+      let filteredLogs = [...customerSales];
+      if (channelTerm) filteredLogs = filteredLogs.filter(item => (item.channel || "مفرق") === channelTerm);
+      if (statusTerm) filteredLogs = filteredLogs.filter(item => item.status === statusTerm);
+
+      const container = qs("userLogItems");
+      container.innerHTML = "";
+
+      if (!filteredLogs.length) {
+        container.innerHTML = `<div class="glass-card p-4 text-center text-gray-500 text-sm">لا يوجد سجل لهذا العميل</div>`;
+      } else {
+        filteredLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        filteredLogs.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "glass-card p-4 cursor-pointer";
+          card.innerHTML = `
+            <div class="flex justify-between items-center gap-3">
+              <div class="flex-1">
+                <div class="text-xs text-gray-400">${new Date(item.date).toLocaleDateString("ar-EG")}</div>
+                <div class="font-bold">${formatMoney(item.amount)}</div>
+                <div class="text-xs">${escapeHtml(item.status)}</div>
+                ${getChannelBadge(item.channel || "مفرق")}
+                <div class="text-[11px] text-gray-500 mt-1">${escapeHtml(buildTransferLine(item) || "بدون حساب محدد")}</div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <button class="card-action-btn edit-btn-small">تعديل</button>
+                <button class="card-action-btn delete-btn-small">حذف</button>
+              </div>
+            </div>
+          `;
+
+          const btns = card.querySelectorAll("button");
+          btns[0].addEventListener("click", (e) => {
+            e.stopPropagation();
+            editSale(item.id);
+          });
+          btns[1].addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteSale(item.id);
+          });
+
+          card.addEventListener("click", () => showSaleDetails(item));
+          container.appendChild(card);
+        });
+      }
+
+      renderUserSettlements(customerSettlements);
+      populateSettlementAccountsSelect();
+    }
+
+    function renderUserSettlements(settlements) {
+      const box = qs("userSettlementsList");
+      box.innerHTML = "";
+
+      if (!settlements.length) {
+        box.innerHTML = `<div class="text-sm text-gray-500 text-center bg-gray-50 rounded-xl p-4">لا يوجد سداد مسجل لهذا الزبون</div>`;
+        return;
+      }
+
+      const sorted = [...settlements].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      sorted.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "settlement-row";
+        row.innerHTML = `
+          <div class="flex justify-between items-start gap-3">
+            <div class="flex-1">
+              <div class="settlement-badge mb-2">سداد</div>
+              <div class="text-xs text-gray-500">${new Date(item.date).toLocaleString("ar-EG")}</div>
+              <div class="text-xs text-gray-500 mt-1">${escapeHtml(buildTransferLine(item) || "بدون حساب محدد")}</div>
+              <div class="text-xs text-gray-500 mt-1">${escapeHtml(item.note || "بدون ملاحظة")}</div>
+            </div>
+            <div class="font-extrabold text-green-700">${formatMoney(item.amount)}</div>
+          </div>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    async function handleCustomerNameInput(val) {
+      const suggestionsDiv = qs("nameSuggestions");
+
+      if (val.length < 2) {
+        suggestionsDiv.classList.add("hidden");
+        suggestionsDiv.innerHTML = "";
+        return;
+      }
+
+      const allData = await getAllSales();
+      const namesMap = new Map();
+
+      allData.forEach(item => {
+        if (String(item.name || "").startsWith(val)) {
+          namesMap.set(item.name, item.phone || "");
+        }
+      });
+
+      if (namesMap.size > 0) {
+        suggestionsDiv.innerHTML = "";
+        namesMap.forEach((phone, name) => {
+          const d = document.createElement("div");
+          d.className = "p-3 border-b last:border-0 hover:bg-blue-50 cursor-pointer text-sm";
+          d.innerText = `${name}${phone ? " - " + phone : ""}`;
+          d.addEventListener("click", () => {
+            qs("custName").value = name;
+            qs("custPhone").value = phone;
+            suggestionsDiv.classList.add("hidden");
+          });
+          suggestionsDiv.appendChild(d);
+        });
+        suggestionsDiv.classList.remove("hidden");
+      } else {
+        suggestionsDiv.classList.add("hidden");
+        suggestionsDiv.innerHTML = "";
+      }
+    }
+
+    async function handleVendorNameInput(val) {
+      const suggestionsDiv = qs("vendorSuggestions");
+
+      if (val.length < 2) {
+        suggestionsDiv.classList.add("hidden");
+        suggestionsDiv.innerHTML = "";
+        return;
+      }
+
+      const allData = await getAllPurchases();
+      const names = [...new Set(allData.map(x => x.vendorName).filter(Boolean))].filter(name => String(name).startsWith(val));
+
+      if (names.length) {
+        suggestionsDiv.innerHTML = "";
+        names.forEach(name => {
+          const d = document.createElement("div");
+          d.className = "p-3 border-b last:border-0 hover:bg-blue-50 cursor-pointer text-sm";
+          d.innerText = name;
+          d.addEventListener("click", () => {
+            qs("vendorName").value = name;
+            suggestionsDiv.classList.add("hidden");
+          });
+          suggestionsDiv.appendChild(d);
+        });
+        suggestionsDiv.classList.remove("hidden");
+      } else {
+        suggestionsDiv.classList.add("hidden");
+        suggestionsDiv.innerHTML = "";
+      }
+    }
+
+    function showSaleDetails(item) {
+      selectedSaleId = item.id;
+      currentDetailPayment = item;
+      qs("modalContent").innerHTML = `
+        <div class="flex justify-between"><span>الاسم:</span> <b>${escapeHtml(item.name)}</b></div>
+        <div class="flex justify-between"><span>الهاتف:</span> <b>${escapeHtml(item.phone || "غير مسجل")}</b></div>
+        <div class="flex justify-between"><span>النوع:</span> <b>${escapeHtml(item.channel || "مفرق")}</b></div>
+        <div class="flex justify-between"><span>المبلغ:</span> <b class="text-blue-600">${formatMoney(item.amount)}</b></div>
+        <div class="flex justify-between"><span>التاريخ:</span> <b>${new Date(item.date).toLocaleString("ar-EG")}</b></div>
+        <div class="flex justify-between"><span>الحالة:</span> <b>${escapeHtml(item.status)}</b></div>
+        <div class="flex justify-between"><span>تم التحويل إلى:</span> <b>${escapeHtml(buildTransferLine(item) || "غير محدد")}</b></div>
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div class="text-xs text-gray-400 mb-1">المشتريات:</div>
+          <div class="text-gray-700">${escapeHtml(item.items || "لا توجد مشتريات مسجلة")}</div>
+        </div>
+      `;
+      openModal("detailsModal");
+    }
+
+    function showPurchaseDetails(item) {
+      selectedPurchaseId = item.id;
+      qs("purchaseModalContent").innerHTML = `
+        <div class="flex justify-between"><span>اسم التاجر:</span> <b>${escapeHtml(item.vendorName)}</b></div>
+        <div class="flex justify-between"><span>المبلغ:</span> <b class="text-slate-700">${formatMoney(item.amount)}</b></div>
+        <div class="flex justify-between"><span>التاريخ:</span> <b>${new Date(item.date).toLocaleString("ar-EG")}</b></div>
+        <div class="flex justify-between"><span>الحالة:</span> <b>${escapeHtml(item.status)}</b></div>
+        <div class="flex justify-between"><span>الحساب:</span> <b>${escapeHtml(buildTransferLine(item) || "غير محدد")}</b></div>
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div class="text-xs text-gray-400 mb-1">الملاحظات:</div>
+          <div class="text-gray-700">${escapeHtml(item.notes || "لا توجد ملاحظات")}</div>
+        </div>
+      `;
+      openModal("purchaseDetailsModal");
+    }
+
+    async function updateSaleStatus(newStatus) {
+      if (!selectedSaleId) return;
+
+      const tx = db.transaction([SALES_STORE], "readwrite");
+      const store = tx.objectStore(SALES_STORE);
+      const req = store.get(selectedSaleId);
+
+      req.onsuccess = () => {
+        const data = req.result;
+        if (!data) return;
+        data.status = newStatus;
+        store.put(data);
+
+        tx.oncomplete = async () => {
+          closeModalById("detailsModal");
+          if (currentProfileData) await openUserProfile(data.name, data.phone, false);
+          await updateDashboard();
+          showToast("تم تحديث الحالة");
+        };
+      };
+    }
+
+    async function updatePurchaseStatus(newStatus) {
+      if (!selectedPurchaseId) return;
+
+      const tx = db.transaction([PURCHASES_STORE], "readwrite");
+      const store = tx.objectStore(PURCHASES_STORE);
+      const req = store.get(selectedPurchaseId);
+
+      req.onsuccess = () => {
+        const data = req.result;
+        if (!data) return;
+        data.status = newStatus;
+        store.put(data);
+
+        tx.oncomplete = async () => {
+          closeModalById("purchaseDetailsModal");
+          await updateDashboard();
+          showToast("تم تحديث حالة المشتريات");
+        };
+      };
+    }
+
+    async function editSale(id) {
+      const payment = await transactionGetById(SALES_STORE, id);
+      if (!payment) {
+        alert("تعذر العثور على السجل");
+        return;
+      }
+
+      editingSaleId = payment.id;
+      qs("custName").value = payment.name || "";
+      qs("custPhone").value = payment.phone || "";
+      qs("payAmount").value = payment.amount || "";
+      qs("payStatus").value = payment.status || "تم الدفع";
+      qs("payChannel").value = payment.channel || "جملة";
+      qs("payItems").value = payment.items || "";
+      populateTransferAccountsSelect(
+        payment.transferAccountType && payment.transferAccountName
+          ? `${payment.transferAccountType}|||${payment.transferAccountName}`
+          : ""
+      );
+      qs("savePaymentBtn").innerText = "حفظ التعديل";
+      navigateTo("addPayment", "تعديل بيع");
+    }
+
+    async function editPurchase(id) {
+      const purchase = await transactionGetById(PURCHASES_STORE, id);
+      if (!purchase) {
+        alert("تعذر العثور على السجل");
+        return;
+      }
+
+      editingPurchaseId = purchase.id;
+      qs("vendorName").value = purchase.vendorName || "";
+      qs("purchaseAmount").value = purchase.amount || "";
+      qs("purchaseStatus").value = purchase.status || "تم دفعها";
+      qs("purchaseNotes").value = purchase.notes || "";
+      populatePurchaseAccountsSelect(
+        purchase.paidFromAccountType && purchase.paidFromAccountName
+          ? `${purchase.paidFromAccountType}|||${purchase.paidFromAccountName}`
+          : ""
+      );
+      qs("savePurchaseBtn").innerText = "حفظ التعديل";
+      navigateTo("addPurchase", "تعديل مشتريات");
+    }
+
+    function deleteSale(id) {
+      if (!confirm("هل أنت متأكد من حذف هذا البيع؟")) return;
+
+      const tx = db.transaction([SALES_STORE], "readwrite");
+      tx.objectStore(SALES_STORE).delete(id);
+      tx.oncomplete = async () => {
+        showToast("تم حذف البيع");
+        await updateDashboard();
+        if (currentPage === "fullLog") await loadFullLog();
+        if (currentPage === "userProfile" && currentProfileData) {
+          await openUserProfile(currentProfileData.name, currentProfileData.phone, false);
+        }
+      };
+    }
+
+    function deletePurchase(id) {
+      if (!confirm("هل أنت متأكد من حذف سجل المشتريات؟")) return;
+
+      const tx = db.transaction([PURCHASES_STORE], "readwrite");
+      tx.objectStore(PURCHASES_STORE).delete(id);
+      tx.oncomplete = async () => {
+        showToast("تم حذف المشتريات");
+        await updateDashboard();
+        if (currentPage === "fullLog") await loadFullLog();
+      };
+    }
+
+    async function loadDebtsPage() {
+      const [sales, purchases, settlements] = await Promise.all([
+        getAllSales(),
+        getAllPurchases(),
+        getAllSettlements()
+      ]);
+
+      const customerDebtMap = new Map();
+
+      sales.forEach(item => {
+        if (item.status === "لم يدفع" || item.status === "قيد المراجعة") {
+          const key = `${item.name}|||${item.phone || ""}`;
+          if (!customerDebtMap.has(key)) {
+            customerDebtMap.set(key, {
+              name: item.name,
+              phone: item.phone || "",
+              debt: 0
+            });
+          }
+          customerDebtMap.get(key).debt += Number(item.amount || 0);
+        }
+      });
+
+      settlements.forEach(item => {
+        const key = `${item.customerName}|||${item.customerPhone || ""}`;
+        if (!customerDebtMap.has(key)) {
+          customerDebtMap.set(key, {
+            name: item.customerName,
+            phone: item.customerPhone || "",
+            debt: 0
+          });
+        }
+        customerDebtMap.get(key).debt -= Number(item.amount || 0);
+      });
+
+      const customerDebts = [...customerDebtMap.values()]
+        .map(x => ({ ...x, debt: Math.max(0, x.debt) }))
+        .filter(x => x.debt > 0)
+        .sort((a, b) => b.debt - a.debt);
+
+      const vendorDebts = purchases
+        .filter(x => x.status === "دين")
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      qs("customerDebtsCount").innerText = customerDebts.length;
+      qs("vendorDebtsCount").innerText = vendorDebts.length;
+
+      const customerBox = qs("customerDebtsList");
+      const vendorBox = qs("vendorDebtsList");
+
+      customerBox.innerHTML = "";
+      vendorBox.innerHTML = "";
+
+      if (!customerDebts.length) {
+        customerBox.innerHTML = `<div class="bg-white rounded-2xl p-4 text-center text-sm text-slate-500">لا توجد ديون زبائن حالياً</div>`;
+      } else {
+        customerDebts.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "bg-white rounded-2xl p-4 cursor-pointer";
+          card.innerHTML = `
+            <div class="flex justify-between gap-3">
+              <div class="flex-1">
+                <div class="font-bold">${escapeHtml(item.name)}</div>
+                <div class="text-xs text-slate-500 mt-1">${escapeHtml(item.phone || "---")}</div>
+                <div class="text-xs mt-1 text-red-600">رصيد دين متبقٍ</div>
+              </div>
+              <div class="font-extrabold text-red-600">${formatMoney(item.debt)}</div>
+            </div>
+          `;
+          card.addEventListener("click", () => openUserProfile(item.name, item.phone));
+          customerBox.appendChild(card);
+        });
+      }
+
+      if (!vendorDebts.length) {
+        vendorBox.innerHTML = `<div class="bg-white rounded-2xl p-4 text-center text-sm text-slate-500">لا توجد ديون تجار حالياً</div>`;
+      } else {
+        vendorDebts.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "bg-white rounded-2xl p-4 cursor-pointer";
+          card.innerHTML = `
+            <div class="flex justify-between gap-3">
+              <div class="flex-1">
+                <div class="font-bold">${escapeHtml(item.vendorName)}</div>
+                <div class="text-xs text-slate-500 mt-1">${escapeHtml(item.notes || "بدون ملاحظات")}</div>
+                <div class="text-xs mt-1">${escapeHtml(buildTransferLine(item) || "بدون حساب")}</div>
+              </div>
+              <div class="font-extrabold text-amber-700">${formatMoney(item.amount)}</div>
+            </div>
+          `;
+          card.addEventListener("click", () => showPurchaseDetails(item));
+          vendorBox.appendChild(card);
+        });
+      }
+    }
+
+    async function updateReports() {
+      const [sales, purchases, settlements] = await Promise.all([
+        getAllSales(),
+        getAllPurchases(),
+        getAllSettlements()
+      ]);
+
+      const completedSales = sales.filter(x => x.status === "تم الدفع");
+      const customerDebtSales = sales.filter(x => x.status === "لم يدفع" || x.status === "قيد المراجعة");
+      const vendorPaid = purchases.filter(x => x.status === "تم دفعها");
+      const vendorDebts = purchases.filter(x => x.status === "دين");
+
+      const totalCompletedSales = completedSales.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalCustomerDebtRaw = customerDebtSales.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalSettlements = settlements.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalCustomerDebts = Math.max(0, totalCustomerDebtRaw - totalSettlements);
+      const totalVendorPaid = vendorPaid.reduce((s, x) => s + Number(x.amount || 0), 0);
+      const totalVendorDebts = vendorDebts.reduce((s, x) => s + Number(x.amount || 0), 0);
+
+      const safeSet = (id, val) => {
+        const el = qs(id);
+        if (el) el.innerText = formatMoney(val);
+      };
+
+      safeSet("reportCompletedSales", totalCompletedSales);
+      safeSet("reportCustomerDebts", totalCustomerDebts);
+      safeSet("reportVendorPaid", totalVendorPaid);
+      safeSet("reportVendorDebts", totalVendorDebts);
+
+      renderAccountBalances(completedSales, vendorPaid, settlements);
+    }
+
+    function renderAccountBalances(completedSales, vendorPaid, settlements) {
+      const accounts = getTransferAccounts();
+      const box = qs("accountBalancesList");
+      if (!box) return;
+
+      box.innerHTML = "";
+
+      if (!accounts.length) {
+        box.innerHTML = `<div class="bg-gray-50 border rounded-2xl p-4 text-center text-sm text-slate-500">لا توجد حسابات مضافة</div>`;
+        return;
+      }
+
+      accounts.forEach(acc => {
+        const inSales = completedSales
+          .filter(x => x.transferAccountType === acc.type && x.transferAccountName === acc.owner)
+          .reduce((s, x) => s + Number(x.amount || 0), 0);
+
+        const inSettlements = settlements
+          .filter(x => x.settlementAccountType === acc.type && x.settlementAccountName === acc.owner)
+          .reduce((s, x) => s + Number(x.amount || 0), 0);
+
+        const outPurchases = vendorPaid
+          .filter(x => x.paidFromAccountType === acc.type && x.paidFromAccountName === acc.owner)
+          .reduce((s, x) => s + Number(x.amount || 0), 0);
+
+        const balance = inSales + inSettlements - outPurchases;
+
+        const item = document.createElement("div");
+        item.className = "account-item";
+        item.innerHTML = `
+          <div class="min-w-0">
+            <div class="account-badge">${escapeHtml(acc.type)}</div>
+            <div class="font-bold text-gray-800 line-clamp-1">${escapeHtml(acc.owner)}</div>
+            <div class="text-xs text-slate-500 mt-1">مبيعات مكتملة: ${formatMoney(inSales)}</div>
+            <div class="text-xs text-slate-500 mt-1">سداد زبائن: ${formatMoney(inSettlements)}</div>
+            <div class="text-xs text-slate-500 mt-1">مدفوع للتجار: ${formatMoney(outPurchases)}</div>
+          </div>
+          <div class="font-extrabold ${balance >= 0 ? 'text-green-700' : 'text-red-700'}">${formatMoney(balance)}</div>
+        `;
+        box.appendChild(item);
+      });
+    }
+
+    function createSinglePaymentMessage(item) {
+      const settings = getStoreSettings();
+      const storeName = (settings.storeName || "").trim();
+      const paymentInfo = (settings.paymentInfo || "").trim();
+
+      let msg = `${item.name || "الزبون"}\n\n`;
+      msg += `يرجى دفع المبلغ\n`;
+      msg += `• ${formatDayMonth(item.date)} - ${formatMoney(item.amount)}`;
+      if (item.channel) msg += ` - ${item.channel}`;
+      if (item.items && item.items.trim()) msg += ` - ${item.items.trim()}`;
+      msg += `\n\nالإجمالي ${formatMoney(item.amount)}`;
+
+      if (paymentInfo) msg += `\n\n${paymentInfo}`;
+      if (storeName) msg += `\n${storeName}`;
+
+      return msg.trim();
+    }
+
+    function createCustomerMessage(payments, customerName, remainingDebt = 0) {
+      const settings = getStoreSettings();
+      const storeName = (settings.storeName || "").trim();
+      const paymentInfo = (settings.paymentInfo || "").trim();
+
+      const pendingPayments = [...payments]
+        .filter(item => item.status === "قيد المراجعة" || item.status === "لم يدفع")
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (!pendingPayments.length && remainingDebt <= 0) {
+        return `${customerName || "الزبون"}\n\nلا توجد دفعات غير مكتملة حالياً.`;
+      }
+
+      let msg = `${customerName || "الزبون"}\n\n`;
+      msg += `يرجى دفع المبلغ\n`;
+
+      pendingPayments.forEach(item => {
+        msg += `• ${formatDayMonth(item.date)} - ${formatMoney(item.amount)}`;
+        if (item.channel) msg += ` - ${item.channel}`;
+        if (item.items && item.items.trim()) msg += ` - ${item.items.trim()}`;
+        msg += `\n`;
+      });
+
+      msg += `\nالمتبقي ${formatMoney(remainingDebt)}`;
+
+      if (paymentInfo) msg += `\n\n${paymentInfo}`;
+      if (storeName) msg += `\n${storeName}`;
+
+      return msg.trim();
+    }
+
+    function openMessageModal(message, phone = "") {
+      currentMessageText = message || "";
+      currentMessagePhone = phone || "";
+      qs("messagePreview").textContent = currentMessageText;
+      openModal("messageModal");
+    }
+
+    function closeMessageModal() {
+      closeModalById("messageModal");
+      currentMessageText = "";
+      currentMessagePhone = "";
+    }
+
+    async function copyCurrentMessage() {
+      if (!currentMessageText) return;
+
+      try {
+        await navigator.clipboard.writeText(currentMessageText);
+        showToast("تم نسخ الرسالة");
+      } catch {
+        const textarea = document.createElement("textarea");
+        textarea.value = currentMessageText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+        showToast("تم نسخ الرسالة");
+      }
+    }
+
+    function normalizePhone(phone) {
+      return String(phone || "").replace(/\D/g, "");
+    }
+
+    function openSendChoiceModal(defaultMode = "whatsapp") {
+      if (!currentMessageText) return;
+      openModal("sendChoiceModal");
+      qs("whatsPrefixWrap").classList.toggle("hidden-force", defaultMode !== "whatsapp");
+    }
+
+    function closeSendChoiceModal() {
+      closeModalById("sendChoiceModal");
+    }
+
+    function sendCurrentMessageViaWhatsApp(prefix = "970") {
+      const phone = normalizePhone(currentMessagePhone);
+      const encoded = encodeURIComponent(currentMessageText || "");
+      const finalPhone = phone ? `${prefix}${phone.replace(/^0+/, "")}` : "";
+      closeSendChoiceModal();
+
+      if (finalPhone) {
+        window.open(`https://wa.me/${finalPhone}?text=${encoded}`, "_blank");
+      } else {
+        window.open(`https://wa.me/?text=${encoded}`, "_blank");
+      }
+    }
+
+    function sendCurrentMessageViaSms() {
+      const phone = normalizePhone(currentMessagePhone);
+      const encoded = encodeURIComponent(currentMessageText || "");
+      closeSendChoiceModal();
+
+      if (phone) {
+        window.location.href = `sms:${phone}?body=${encoded}`;
+      } else {
+        window.location.href = `sms:?body=${encoded}`;
+      }
+    }
+
+    function generateSinglePaymentMessage(item) {
+      const message = createSinglePaymentMessage(item);
+      openMessageModal(message, item.phone || "");
+    }
+
+    async function generateCustomerMessageFromProfile() {
+      if (!currentProfileData) return;
+
+      const summary = await getCustomerDebtSummary(currentProfileData.name, currentProfileData.phone);
+      const phone = currentProfileData.phone || "";
+      const message = createCustomerMessage(summary.customerSales, currentProfileData.name, summary.remainingDebt);
+      openMessageModal(message, phone);
+    }
+
+    function generateMessageFromCurrentDetail() {
+      if (!currentDetailPayment) return;
+      generateSinglePaymentMessage(currentDetailPayment);
+    }
+
+    function openModal(modalId) {
+      qs(modalId).classList.remove("hidden");
+      activeModalId = modalId;
+      window.history.pushState({ page: currentPage, modal: modalId }, "", "#" + currentPage + "-" + modalId);
+    }
+
+    function closeModalById(modalId) {
+      qs(modalId).classList.add("hidden");
+      if (activeModalId === modalId) activeModalId = null;
+    }
+
+    function closeActiveModal() {
+      if (!activeModalId) return;
+      closeModalById(activeModalId);
+    }
+
+    function handleModalOutsideClick(e) {
+      if (!activeModalId) return;
+      const modal = qs(activeModalId);
+      const card = modal.querySelector(".modal-card");
+      if (!card) return;
+      if (!card.contains(e.target) && modal.contains(e.target)) {
+        closeActiveModal();
+      }
+    }
+
+    setPage("home", "الرئيسية");
+  </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          await navigator.serviceWorker.register("./sw-payed.js");
+          console.log("SW registered");
+        } catch (e) {
+          console.error("SW registration failed", e);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
