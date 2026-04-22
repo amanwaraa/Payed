@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZERO SHOP - Hotspot Login</title>
+  <script src="$(link-orig)/md5.js"></script>
+
+  <style>
+    @font-face {
+      font-family: "HotspotArabic";
+      src: url("./الخط.woff2") format("woff2");
+      font-weight: 300 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root{
+      --primary:#1d9bf0;
+      --primary-dark:#1479bd;
+      --primary-soft:#dff3ff;
+      --primary-soft-2:#eef8ff;
+      --bg:#eef7ff;
+      --surface:#ffffff;
+      --surface-2:#f5fbff;
+      --text:#18324a;
+      --muted:#6f8598;
+      --border:#d8ebf7;
+      --success:#22c55e;
+      --danger:#dc2626;
+      --shadow:0 14px 35px rgba(17,98,152,.12);
+      --shadow-strong:0 18px 45px rgba(17,98,152,.16);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:18px;
+    }
+
+    .dark{
+      --bg:#071722;
+      --surface:#0d2130;
+      --surface-2:#10283a;
+      --text:#eff9ff;
+      --muted:#9eb6c8;
+      --border:#1f4258;
+      --primary-soft:#16374e;
+      --primary-soft-2:#112b3d;
+      --shadow:0 14px 35px rgba(0,0,0,.25);
+      --shadow-strong:0 18px 45px rgba(0,0,0,.35);
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html{
+      -webkit-text-size-adjust:100%;
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      font-family:
+        "HotspotArabic",
+        -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto,
+        "Segoe UI", Tahoma, Geneva, Verdana,
+        "Arabic Transparent", "Simplified Arabic", "Microsoft Sans Serif",
+        sans-serif;
+      text-rendering:optimizeLegibility;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      direction:rtl;
+      background:linear-gradient(180deg,#f7fcff 0%, var(--bg) 35%, var(--bg) 100%);
+      color:var(--text);
+      min-height:100vh;
+      padding-bottom:105px;
+    }
+
+    h1,h2,h3,h4,h5,h6{
+      font-family:
+        "HotspotArabic",
+        "Segoe UI Bold","Arial Black","Segoe UI",Tahoma,sans-serif;
+      font-weight:800;
+      letter-spacing:-.01em;
+    }
+
+    button,input,a{
+      font-family:inherit;
+    }
+
+    .page{
+      width:100%;
+      max-width:460px;
+      margin:0 auto;
+    }
+
+    .topbar{
+      padding:14px 14px 8px;
+    }
+
+    .topbar-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .status-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(255,255,255,.9);
+      border:1px solid var(--border);
+      color:var(--text);
+      padding:8px 14px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      box-shadow:var(--shadow);
+    }
+
+    .dark .status-chip{
+      background:rgba(13,33,48,.92);
+    }
+
+    .status-dot{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--success);
+      box-shadow:0 0 0 6px rgba(34,197,94,.12);
+      animation:pulse 1.6s infinite;
+    }
+
+    @keyframes pulse{
+      0%,100%{transform:scale(1);opacity:1}
+      50%{transform:scale(1.28);opacity:.6}
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .theme-btn,.time-pill{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.9);
+      box-shadow:var(--shadow);
+    }
+
+    .dark .theme-btn,.dark .time-pill{
+      background:rgba(13,33,48,.92);
+    }
+
+    .theme-btn{
+      width:42px;
+      height:42px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text);
+      padding:0;
+      cursor:pointer;
+    }
+
+    .time-pill{
+      min-height:42px;
+      padding:0 14px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      font-weight:800;
+      color:var(--muted);
+    }
+
+    .time-pill .clock-txt{
+      color:var(--text);
+      font-size:13px;
+    }
+
+    .hero{
+      margin:0 0 18px;
+      position:relative;
+    }
+
+    .hero-banner-wrap{
+      margin:0 12px;
+      border-radius:34px;
+      overflow:hidden;
+      box-shadow:var(--shadow-strong);
+      background:linear-gradient(135deg,#123e67,#1c7cc4 55%, #25b0ff);
+      position:relative;
+    }
+
+    .hero-banner{
+      width:100%;
+      display:block;
+    }
+
+    .hero-overlay{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(180deg,rgba(4,19,32,.04),rgba(4,19,32,.14));
+    }
+
+    .hero-logo-badge{
+      position:absolute;
+      top:18px;
+      right:18px;
+      width:74px;
+      height:74px;
+      border-radius:22px;
+      background:rgba(255,255,255,.92);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 14px 35px rgba(0,0,0,.14);
+      overflow:hidden;
+      backdrop-filter:blur(8px);
+    }
+
+    .hero-logo-badge img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .section{
+      padding:0 14px;
+    }
+
+    .tab-content{
+      display:none;
+    }
+
+    .tab-content.active{
+      display:block;
+      animation:fadeIn .32s ease;
+    }
+
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(8px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    .card{
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      padding:22px;
+      backdrop-filter:blur(8px);
+    }
+
+    .dark .card{
+      background:rgba(13,33,48,.95);
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .section-head-main{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .section-icon{
+      width:48px;
+      height:48px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--primary-soft);
+      color:var(--primary);
+      flex-shrink:0;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:22px;
+      font-weight:900;
+    }
+
+    .section-subtitle{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .welcome-box{
+      margin:0 14px 18px;
+      padding:16px 18px;
+      border-radius:26px;
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .dark .welcome-box{
+      background:rgba(13,33,48,.95);
+    }
+
+    .welcome-badge{
+      background:#22c55e;
+      color:#fff;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      padding:7px 16px;
+      box-shadow:0 10px 20px rgba(34,197,94,.25);
+      white-space:nowrap;
+    }
+
+    .welcome-title{
+      margin:0 0 6px;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .welcome-text{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      line-height:1.7;
+    }
+
+    .welcome-icon{
+      width:60px;
+      height:60px;
+      border-radius:18px;
+      background:var(--primary-soft-2);
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .field{
+      position:relative;
+      margin-bottom:14px;
+    }
+
+    .input{
+      width:100%;
+      height:58px;
+      border-radius:22px;
+      border:2px solid var(--border);
+      background:var(--surface-2);
+      color:var(--text);
+      outline:none;
+      font-size:15px;
+      font-weight:800;
+      padding:0 52px 0 52px;
+      transition:.22s;
+    }
+
+    .input::placeholder{
+      color:#91a3b3;
+      font-weight:700;
+    }
+
+    .input:focus{
+      border-color:#9cd9ff;
+      background:var(--surface);
+      box-shadow:0 0 0 5px rgba(29,155,240,.10);
+    }
+
+    .field-icon{
+      position:absolute;
+      right:18px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#91a3b3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .eye-btn{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      width:36px;
+      height:36px;
+      border:none;
+      border-radius:12px;
+      background:transparent;
+      color:#91a3b3;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+    }
+
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:4px 0 14px;
+    }
+
+    .remember{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:13px;
+      font-weight:800;
+      color:var(--muted);
+    }
+
+    .remember input{
+      width:18px;
+      height:18px;
+      accent-color:var(--primary);
+    }
+
+    .login-btn{
+      width:100%;
+      height:58px;
+      border:none;
+      border-radius:22px;
+      color:#fff;
+      background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+      box-shadow:0 16px 28px rgba(29,155,240,.28);
+      font-size:18px;
+      font-weight:900;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition:.18s;
+    }
+
+    .login-btn:active{
+      transform:scale(.99);
+    }
+
+    .login-btn:disabled{
+      opacity:.8;
+      cursor:not-allowed;
+    }
+
+    .msg{
+      display:none;
+      margin-top:14px;
+      border-radius:18px;
+      padding:14px;
+      text-align:center;
+      font-size:13px;
+      font-weight:900;
+      line-height:1.8;
+    }
+
+    .msg.error{
+      display:block;
+      background:#fef2f2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+    }
+
+    .msg.success{
+      display:block;
+      background:#f0fdf4;
+      color:#166534;
+      border:1px solid #bbf7d0;
+    }
+
+    .mini-panel{
+      margin-top:18px;
+      background:var(--primary-soft-2);
+      border-radius:24px;
+      padding:16px;
+      border:1px solid var(--border);
+    }
+
+    .mini-panel-title{
+      margin:0 0 8px;
+      font-size:14px;
+      font-weight:900;
+      color:var(--primary);
+    }
+
+    .mini-panel-text{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.8;
+      font-weight:700;
+    }
+
+    .loader-ring{
+      width:92px;
+      height:92px;
+      border-radius:50%;
+      border:7px solid rgba(29,155,240,.14);
+      border-top-color:var(--primary);
+      animation:spin 1s linear infinite;
+      margin:0 auto 22px;
+      box-shadow:0 0 0 8px rgba(29,155,240,.05);
+    }
+
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+
+    .loading-dots{
+      margin-top:22px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .loading-dots span{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--primary);
+      animation:bounce 1s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2){animation-delay:.15s}
+    .loading-dots span:nth-child(3){animation-delay:.3s}
+
+    @keyframes bounce{
+      0%,80%,100%{transform:translateY(0);opacity:.7}
+      40%{transform:translateY(-7px);opacity:1}
+    }
+
+    .success-circle{
+      width:106px;
+      height:106px;
+      border-radius:50%;
+      margin:0 auto 20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--success);
+      background:linear-gradient(135deg, rgba(34,197,94,.15), rgba(16,185,129,.08));
+      border:1px solid rgba(34,197,94,.25);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .success-circle::after{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background:radial-gradient(circle, rgba(34,197,94,.15), transparent 60%);
+      animation:pulseGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow{
+      0%,100%{transform:scale(.9);opacity:.7}
+      50%{transform:scale(1.1);opacity:1}
+    }
+
+    .success-inner{
+      position:relative;
+      z-index:1;
+    }
+
+    .center{
+      text-align:center;
+    }
+
+    .title-big{
+      font-size:26px;
+      font-weight:900;
+      margin:0 0 12px;
+    }
+
+    .sub{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.8;
+      font-weight:700;
+    }
+
+    .link-btn{
+      margin-top:10px;
+      border:none;
+      background:none;
+      color:var(--primary);
+      font-size:14px;
+      font-weight:900;
+      text-decoration:underline;
+      cursor:pointer;
+    }
+
+    .back-btn{
+      margin-top:18px;
+      min-width:200px;
+      display:inline-flex;
+      width:auto;
+      padding:0 24px;
+    }
+
+    .package-list{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .package-card{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.92);
+      border-radius:26px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      transition:.22s;
+    }
+
+    .dark .package-card{
+      background:rgba(13,33,48,.95);
+    }
+
+    .package-card.selected{
+      outline:2px solid rgba(29,155,240,.15);
+    }
+
+    .price-badge{
+      min-width:58px;
+      height:38px;
+      border-radius:10px;
+      background:var(--primary);
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:15px;
+      font-weight:900;
+      box-shadow:0 10px 20px rgba(29,155,240,.22);
+      flex-shrink:0;
+    }
+
+    .package-main{
+      flex:1;
+      text-align:center;
+    }
+
+    .package-title{
+      margin:0 0 6px;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .package-desc{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+      line-height:1.7;
+    }
+
+    .package-icon{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:var(--primary-soft-2);
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .list-item{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.92);
+      border-radius:26px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .dark .list-item{
+      background:rgba(13,33,48,.95);
+    }
+
+    .list-item-main{
+      flex:1;
+      text-align:right;
+    }
+
+    .list-item-title{
+      margin:0 0 4px;
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .list-item-sub{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .list-item-icon{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      background:var(--primary-soft-2);
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .support-card{
+      text-align:center;
+    }
+
+    .support-number{
+      color:var(--primary);
+      font-size:36px;
+      font-weight:900;
+      text-decoration:none;
+      display:inline-block;
+      margin:10px 0 18px;
+    }
+
+    .support-actions{
+      display:flex;
+      justify-content:center;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .social-btn{
+      width:56px;
+      height:56px;
+      border-radius:18px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.92);
+      color:var(--primary);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:var(--shadow);
+      text-decoration:none;
+    }
+
+    .dark .social-btn{
+      background:rgba(13,33,48,.95);
+    }
+
+    .footer{
+      text-align:center;
+      color:var(--muted);
+      padding:26px 16px 18px;
+    }
+
+    .footer-top{
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+
+    .footer-icons{
+      display:flex;
+      justify-content:center;
+      gap:16px;
+      margin-top:12px;
+    }
+
+    .footer-bottom{
+      margin-top:14px;
+      font-size:10px;
+      opacity:.72;
+    }
+
+    .bottom-nav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      height:86px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      border-top:1px solid var(--border);
+      display:flex;
+      justify-content:space-around;
+      align-items:center;
+      padding:0 12px;
+      z-index:100;
+      transition:.3s;
+      max-width:460px;
+      margin:0 auto;
+      box-shadow:0 -8px 30px rgba(17,98,152,.08);
+    }
+
+    .dark .bottom-nav{
+      background:rgba(13,33,48,.94);
+    }
+
+    .nav-item{
+      border:none;
+      background:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      width:25%;
+      color:#9aa8b8;
+      cursor:pointer;
+      position:relative;
+      padding:8px 4px;
+      transition:.2s;
+      border-radius:24px;
+      height:64px;
+    }
+
+    .nav-item span{
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .nav-item.active{
+      color:var(--primary);
+      background:var(--primary-soft-2);
+    }
+
+    .icon{
+      width:20px;
+      height:20px;
+      display:block;
+    }
+
+    .icon-md{
+      width:22px;
+      height:22px;
+      display:block;
+    }
+
+    .icon-lg{
+      width:26px;
+      height:26px;
+      display:block;
+    }
+
+    .icon-xl{
+      width:30px;
+      height:30px;
+      display:block;
+    }
+
+    @media (max-width:380px){
+      .section-title{font-size:20px}
+      .title-big{font-size:23px}
+      .package-title{font-size:16px}
+      .support-number{font-size:30px}
+      .hero-logo-badge{width:66px;height:66px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="status-chip">
+          <span class="status-dot"></span>
+          <span>الشبكة متصلة</span>
+        </div>
+
+        <div class="top-actions">
+          <button class="theme-btn" type="button" onclick="toggleTheme()" aria-label="تبديل الوضع">
+            <span id="theme-icon"></span>
+          </button>
+
+          <div class="time-pill">
+            <span class="clock-txt" id="clock">00:00</span>
+            <span>|</span>
+            <span id="date">تحميل التاريخ...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-banner-wrap">
+        <img class="hero-banner" alt="ZERO SHOP Banner" src="data:image/png;base64,__BANNER_BASE64__">
+        <div class="hero-overlay"></div>
+        <div class="hero-logo-badge">
+          <img alt="ZERO SHOP Logo" src="data:image/png;base64,__LOGO_BASE64__">
+        </div>
+      </div>
+    </section>
+
+    <div class="welcome-box">
+      <div class="welcome-badge">أهلاً بك</div>
+      <div style="flex:1">
+        <h3 class="welcome-title">أهلاً بكم في ZERO SHOP</h3>
+        <p class="welcome-text">نسعد بخدمتكم وتوفير أفضل البطاقات لكم.</p>
+      </div>
+      <div class="welcome-icon">
+        <span id="heart-icon"></span>
+      </div>
+    </div>
+
+    <main class="section">
+      <section id="login-tab" class="tab-content active">
+        <div class="card">
+          <div class="section-head">
+            <div class="section-head-main">
+              <div class="section-icon"><span id="login-icon"></span></div>
+              <div>
+                <h2 class="section-title">تسجيل الدخول</h2>
+                <p class="section-subtitle">أدخل اسم المستخدم أو الكود للدخول إلى الشبكة</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="mikrotik-error" class="msg"></div>
+
+          <form name="sendin" action="$(link-login-only)" method="post" style="display:none;">
+            <input type="hidden" name="username" />
+            <input type="hidden" name="password" />
+            <input type="hidden" name="dst" value="$(link-orig)" />
+            <input type="hidden" name="popup" value="true" />
+          </form>
+
+          <form id="login-form" autocomplete="on">
+            <div class="field">
+              <span class="field-icon" id="user-icon"></span>
+              <input id="username" class="input" type="text" name="username" value="$(username)" placeholder="اسم المستخدم / الكود" autocomplete="username">
+            </div>
+
+            <div class="field">
+              <span class="field-icon" id="lock-icon"></span>
+              <input id="password" class="input" type="password" name="password" placeholder="كلمة المرور (اختياري)" autocomplete="current-password">
+              <button type="button" class="eye-btn" onclick="togglePassword()" aria-label="إظهار أو إخفاء كلمة المرور">
+                <span id="eye-icon"></span>
+              </button>
+            </div>
+
+            <button id="login-btn" class="login-btn" type="submit">
+              <span id="login-btn-text">دخول الإنترنت</span>
+              <span id="login-btn-icon"></span>
+            </button>
+
+            <div class="row" style="margin-top:14px">
+              <label class="remember">
+                <input type="checkbox" id="save-data">
+                <span>تذكر بياناتي للقادم</span>
+              </label>
+            </div>
+          </form>
+
+          <div id="login-message" class="msg"></div>
+
+          <div class="mini-panel">
+            <h4 class="mini-panel-title">ملاحظة</h4>
+            <p class="mini-panel-text">إذا كانت البطاقة لا تحتاج كلمة مرور، اكتب اسم المستخدم فقط واضغط دخول الإنترنت.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="loading-tab" class="tab-content">
+        <div class="card center">
+          <div class="loader-ring"></div>
+          <h2 class="title-big">جاري الاتصال بالشبكة</h2>
+          <div class="sub">يرجى الانتظار قليلاً، يتم الآن التحقق من بيانات الدخول...</div>
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+        </div>
+      </section>
+
+      <section id="success-tab" class="tab-content">
+        <div class="card center">
+          <div class="success-circle">
+            <div class="success-inner"><span id="check-icon"></span></div>
+          </div>
+          <h2 class="title-big" style="color:var(--success)">تم إرسال الطلب بنجاح</h2>
+          <div class="sub">إذا لم يتم الاتصال تلقائيًا يمكنك إعادة المحاولة مرة أخرى.</div>
+          <button class="link-btn" type="button" onclick="retrySavedLogin()">لو ما اتصل اضغط هنا</button>
+          <br>
+          <button class="login-btn back-btn" type="button" onclick="goHome()">الرجوع للرئيسية</button>
+        </div>
+      </section>
+
+      <section id="packages-tab" class="tab-content">
+        <div class="card">
+          <div class="section-head">
+            <div class="section-head-main">
+              <div class="section-icon"><span id="tag-icon"></span></div>
+              <div>
+                <h2 class="section-title">الباقات</h2>
+                <p class="section-subtitle">أفضل البطاقات والأسعار المتوفرة حالياً</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="package-list">
+            <div class="package-card selected">
+              <div class="price-badge">₪ 1</div>
+              <div class="package-main">
+                <h3 class="package-title">8 ساعات / 2 ميجا</h3>
+                <p class="package-desc">مناسبة للتصفح السريع وإنجاز المهام اليومية</p>
+              </div>
+              <div class="package-icon"><span id="clock-icon"></span></div>
+            </div>
+
+            <div class="package-card">
+              <div class="price-badge">₪ 2</div>
+              <div class="package-main">
+                <h3 class="package-title">10 ساعات / 3 ميجا</h3>
+                <p class="package-desc">مناسبة لمشاهدة الفيديوهات والاستخدام المتوسط</p>
+              </div>
+              <div class="package-icon"><span id="hd-icon"></span></div>
+            </div>
+
+            <div class="package-card">
+              <div class="price-badge">₪ 2</div>
+              <div class="package-main">
+                <h3 class="package-title">2 ساعة / 5 ميجا</h3>
+                <p class="package-desc">لباقات السرعة العالية ومناسبة للتحميل</p>
+              </div>
+              <div class="package-icon"><span id="zap-icon"></span></div>
+            </div>
+
+            <div class="package-card">
+              <div class="price-badge">₪ 3</div>
+              <div class="package-main">
+                <h3 class="package-title">24 ساعة / 2 ميجا</h3>
+                <p class="package-desc">اتصال متواصل على مدار اليوم بسعر اقتصادي</p>
+              </div>
+              <div class="package-icon"><span id="infinity-icon"></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="points-tab" class="tab-content">
+        <div class="card">
+          <div class="section-head">
+            <div class="section-head-main">
+              <div class="section-icon"><span id="store-big-icon"></span></div>
+              <div>
+                <h2 class="section-title">نقاط البيع</h2>
+                <p class="section-subtitle">أماكن البيع المعتمدة لديكم</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="list">
+            <div class="list-item">
+              <div class="list-item-main">
+                <h4 class="list-item-title">محل إياد</h4>
+                <p class="list-item-sub">مفترق الإقليمي</p>
+              </div>
+              <div class="list-item-icon"><span id="shop1-icon"></span></div>
+            </div>
+
+            <div class="list-item">
+              <div class="list-item-main">
+                <h4 class="list-item-title">أبو ثائر للخضار والفواكه</h4>
+                <p class="list-item-sub">مفترق الإقليمي</p>
+              </div>
+              <div class="list-item-icon"><span id="bag-icon"></span></div>
+            </div>
+
+            <div class="list-item">
+              <div class="list-item-main">
+                <h4 class="list-item-title">أبو طاهر شلّوف</h4>
+                <p class="list-item-sub">شرق المناهل</p>
+              </div>
+              <div class="list-item-icon"><span id="map-pin-icon"></span></div>
+            </div>
+
+            <div class="list-item">
+              <div class="list-item-main">
+                <h4 class="list-item-title">نقطة شحن أمير العزازي</h4>
+                <p class="list-item-sub">خلف الملعب</p>
+              </div>
+              <div class="list-item-icon"><span id="bolt-icon"></span></div>
+            </div>
+
+            <div class="list-item">
+              <div class="list-item-main">
+                <h4 class="list-item-title">كفي يزن</h4>
+                <p class="list-item-sub">مفترق الإقليمي</p>
+              </div>
+              <div class="list-item-icon"><span id="cup-icon"></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="support-tab" class="tab-content">
+        <div class="card support-card">
+          <div class="section-head" style="justify-content:center;">
+            <div class="section-head-main">
+              <div class="section-icon"><span id="support-big-icon"></span></div>
+              <div>
+                <h2 class="section-title">الدعم الفني</h2>
+                <p class="section-subtitle">نحن هنا لخدمتكم دائماً</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub">لأي استفسار أو مساعدة أو شحن بطاقات تواصل معنا مباشرة.</div>
+          <a class="support-number" href="tel:0592492326">0592492326</a>
+
+          <div class="support-actions">
+            <a class="social-btn" href="tel:0592492326" title="اتصال"><span id="phone-icon"></span></a>
+            <a class="social-btn" href="https://wa.me/972592492326" title="واتساب"><span id="whatsapp-icon"></span></a>
+            <a class="social-btn" href="#" title="إنستغرام"><span id="instagram-icon"></span></a>
+            <a class="social-btn" href="#" title="فيسبوك"><span id="facebook-icon"></span></a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-top">ZERO SHOP NETWORK</div>
+      <div class="footer-icons">
+        <span id="shield-icon"></span>
+        <span id="wifi-footer-icon"></span>
+        <span id="sparkle-icon"></span>
+      </div>
+      <div class="footer-bottom">جميع الحقوق محفوظة © ZERO SHOP</div>
+    </footer>
+
+    <nav class="bottom-nav">
+      <button onclick="showTab('login-tab', this)" class="nav-item active">
+        <span id="home-nav-icon"></span>
+        <span>الرئيسية</span>
+      </button>
+      <button onclick="showTab('packages-tab', this)" class="nav-item">
+        <span id="tag-nav-icon"></span>
+        <span>الباقات</span>
+      </button>
+      <button onclick="showTab('points-tab', this)" class="nav-item">
+        <span id="store-nav-icon"></span>
+        <span>نقاط البيع</span>
+      </button>
+      <button onclick="showTab('support-tab', this)" class="nav-item">
+        <span id="support-nav-icon"></span>
+        <span>الدعم</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    var iconSet = {
+      moon:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+      sun:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.2M12 19.8V22M4.22 4.22l1.56 1.56M18.22 18.22l1.56 1.56M2 12h2.2M19.8 12H22M4.22 19.78l1.56-1.56M18.22 5.78l1.56-1.56"/></svg>',
+      login:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path d="M10 17l5-5-5-5"/><path d="M15 12H4"/></svg>',
+      user:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>',
+      lock:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>',
+      eye:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+      eyeOff:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.58 10.58A2 2 0 0 0 13.42 13.42"/><path d="M9.88 5.09A10.94 10.94 0 0 1 12 5c6.5 0 10.5 7 10.5 7a17.47 17.47 0 0 1-4.04 4.87"/><path d="M6.61 6.61A17.3 17.3 0 0 0 1.5 12s4 7 10.5 7a10.8 10.8 0 0 0 4.01-.75"/></svg>',
+      arrowLeft:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>',
+      spinner:'<svg class="icon" style="animation:spin .9s linear infinite" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity=".25"></circle><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></svg>',
+      heart:'<svg class="icon-lg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-6.7-4.3-9.2-8.1C.8 9.9 2.1 5.8 6 5.1c2-.3 3.4.5 4.3 1.7.9-1.2 2.3-2 4.3-1.7 3.9.7 5.2 4.8 3.2 7.8C18.7 16.7 12 21 12 21z"/></svg>',
+      check:'<svg class="icon-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+      tag:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10l-8 8-9-9V4h5z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>',
+      clock:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+      hd:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm2.3 3.2v5.6H8v-2h2v2h1.7V9.2H10v2H8v-2H6.3zm7 0v5.6h2.5c1.8 0 3.2-1.1 3.2-2.8 0-1.7-1.4-2.8-3.2-2.8h-2.5zm1.7 1.4h.7c.9 0 1.6.5 1.6 1.4 0 .9-.7 1.4-1.6 1.4H15v-2.8z"/></svg>',
+      zap:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>',
+      infinity:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 14.5L14.5 9.5"/><path d="M7 16a4 4 0 1 1 0-8c2 0 3.2 1.2 5 4 1.8 2.8 3 4 5 4a4 4 0 1 0 0-8c-2 0-3.2 1.2-5 4-1.8 2.8-3 4-5 4z"/></svg>',
+      store:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l2-5h14l2 5"/><path d="M4 10h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M9 20v-6h6v6"/></svg>',
+      bag:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg>',
+      mapPin:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12zm0-9.2a2.8 2.8 0 1 1 0-5.6 2.8 2.8 0 0 1 0 5.6z"/></svg>',
+      bolt:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L4 14h5l-1 8 9-12h-5l1-8z"/></svg>',
+      cup:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h10v8a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z"/><path d="M16 7h2a2 2 0 0 1 0 4h-2"/><path d="M8 21h6"/></svg>',
+      support:'<svg class="icon-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 16 0"/><rect x="3" y="12" width="4" height="7" rx="2"/><rect x="17" y="12" width="4" height="7" rx="2"/><path d="M21 19a3 3 0 0 1-3 3h-2"/></svg>',
+      phone:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1.5 1.5 0 0 1 1.5-.37c1.2.4 2.4.6 3.7.6a1.4 1.4 0 0 1 1.4 1.4V20a1.4 1.4 0 0 1-1.4 1.4C10.7 21.4 2.6 13.3 2.6 3.4A1.4 1.4 0 0 1 4 2h3.1a1.4 1.4 0 0 1 1.4 1.4c0 1.3.2 2.5.6 3.7a1.5 1.5 0 0 1-.37 1.5z"/></svg>',
+      whatsapp:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5A11 11 0 0 0 3.7 17.2L2 22l4.9-1.6A11 11 0 1 0 20.5 3.5zm-8.4 17a9 9 0 0 1-4.6-1.3l-.3-.2-2.9.9.9-2.8-.2-.3a9 9 0 1 1 6.9 3.7zm5-6.8c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2s-.8 1-.9 1.1c-.2.2-.3.2-.6.1-1.6-.8-2.7-1.5-3.8-3.5-.3-.4 0-.6.2-.8.2-.2.3-.4.5-.6.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.2s1 2.5 1.1 2.7c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.7.6.7.2 1.3.2 1.8.1.6-.1 1.8-.7 2.1-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3z"/></svg>',
+      instagram:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2.2A2.8 2.8 0 0 0 4.2 7v10A2.8 2.8 0 0 0 7 19.8h10a2.8 2.8 0 0 0 2.8-2.8V7A2.8 2.8 0 0 0 17 4.2zm10.5 1.6a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2.2A2.8 2.8 0 1 0 12 14.8 2.8 2.8 0 0 0 12 9.2z"/></svg>',
+      facebook:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V9c0-.9.2-1.6 1.5-1.6h1.7V4.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.4v2H7.4V14h2.6v8z"/></svg>',
+      shield:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6z"/></svg>',
+      wifi:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12.55a11 11 0 0 1 14 0"/><path d="M8.5 16a6 6 0 0 1 7 0"/><path d="M12 19.5h.01"/><path d="M2 9a16 16 0 0 1 20 0"/></svg>',
+      sparkle:'<svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2zm7 12l.9 2.6L22.5 18l-2.6.9L19 21.5l-.9-2.6-2.6-.9 2.6-.9L19 14zm-14 1l1 2.9L9 19l-2.9 1L5 23l-1-2.9L1 19l3-1.1L5 15z"/></svg>',
+      home:'<svg class="icon-md" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1v-9.5z"/></svg>'
+    };
+
+    function setIcon(id, svg){
+      var el = document.getElementById(id);
+      if(el) el.innerHTML = svg;
+    }
+
+    function initIcons(){
+      setIcon('theme-icon', document.documentElement.classList.contains('dark') ? iconSet.sun : iconSet.moon);
+      setIcon('heart-icon', iconSet.heart);
+      setIcon('login-icon', iconSet.login);
+      setIcon('user-icon', iconSet.user);
+      setIcon('lock-icon', iconSet.lock);
+      setIcon('eye-icon', iconSet.eye);
+      setIcon('login-btn-icon', iconSet.arrowLeft);
+      setIcon('check-icon', iconSet.check);
+      setIcon('tag-icon', iconSet.tag);
+      setIcon('clock-icon', iconSet.clock);
+      setIcon('hd-icon', iconSet.hd);
+      setIcon('zap-icon', iconSet.zap);
+      setIcon('infinity-icon', iconSet.infinity);
+      setIcon('store-big-icon', iconSet.store);
+      setIcon('shop1-icon', iconSet.store);
+      setIcon('bag-icon', iconSet.bag);
+      setIcon('map-pin-icon', iconSet.mapPin);
+      setIcon('bolt-icon', iconSet.bolt);
+      setIcon('cup-icon', iconSet.cup);
+      setIcon('support-big-icon', iconSet.support);
+      setIcon('phone-icon', iconSet.phone);
+      setIcon('whatsapp-icon', iconSet.whatsapp);
+      setIcon('instagram-icon', iconSet.instagram);
+      setIcon('facebook-icon', iconSet.facebook);
+      setIcon('shield-icon', iconSet.shield);
+      setIcon('wifi-footer-icon', iconSet.wifi);
+      setIcon('sparkle-icon', iconSet.sparkle);
+      setIcon('home-nav-icon', iconSet.home);
+      setIcon('tag-nav-icon', iconSet.tag);
+      setIcon('store-nav-icon', iconSet.store);
+      setIcon('support-nav-icon', iconSet.support);
+    }
+
+    var lastLoginData = { username:'', password:'' };
+
+    function updateTime(){
+      var now = new Date();
+      var h = String(now.getHours()).padStart(2,'0');
+      var m = String(now.getMinutes()).padStart(2,'0');
+      document.getElementById('clock').textContent = h + ':' + m;
+      var options = { weekday:'long', day:'numeric', month:'long' };
+      document.getElementById('date').textContent = now.toLocaleDateString('ar-EG', options);
+    }
+
+    function toggleTheme(){
+      var html = document.documentElement;
+      if(html.classList.contains('dark')){
+        html.classList.remove('dark');
+        localStorage.setItem('theme','light');
+      }else{
+        html.classList.add('dark');
+        localStorage.setItem('theme','dark');
+      }
+      setIcon('theme-icon', html.classList.contains('dark') ? iconSet.sun : iconSet.moon);
+    }
+
+    function showTab(id, btn){
+      var tabs = document.querySelectorAll('.tab-content');
+      for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('active');
+      var target = document.getElementById(id);
+      if(target) target.classList.add('active');
+
+      if(btn){
+        var items = document.querySelectorAll('.nav-item');
+        for(var j=0;j<items.length;j++) items[j].classList.remove('active');
+        btn.classList.add('active');
+      }
+
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function goHome(){
+      var homeBtn = document.querySelectorAll('.nav-item')[0];
+      showTab('login-tab', homeBtn);
+    }
+
+    function togglePassword(){
+      var input = document.getElementById('password');
+      if(input.type === 'password'){
+        input.type = 'text';
+        setIcon('eye-icon', iconSet.eyeOff);
+      }else{
+        input.type = 'password';
+        setIcon('eye-icon', iconSet.eye);
+      }
+    }
+
+    function showMessage(type, text){
+      var box = document.getElementById('login-message');
+      box.className = 'msg ' + type;
+      box.textContent = text;
+    }
+
+    function clearMessage(){
+      var box = document.getElementById('login-message');
+      box.className = 'msg';
+      box.textContent = '';
+    }
+
+    function setLoadingButton(loading){
+      var btn = document.getElementById('login-btn');
+      var txt = document.getElementById('login-btn-text');
+      if(loading){
+        btn.disabled = true;
+        txt.textContent = 'جاري التحقق...';
+        setIcon('login-btn-icon', iconSet.spinner);
+      }else{
+        btn.disabled = false;
+        txt.textContent = 'دخول الإنترنت';
+        setIcon('login-btn-icon', iconSet.arrowLeft);
+      }
+    }
+
+    function doRealLogin(username, password){
+      document.sendin.username.value = username;
+      if('$(chap-id)' !== ''){
+        document.sendin.password.value = hexMD5('$(chap-id)' + password + '$(chap-challenge)');
+      }else{
+        document.sendin.password.value = password;
+      }
+      document.sendin.submit();
+    }
+
+    function retrySavedLogin(){
+      if(!lastLoginData.username){
+        goHome();
+        showMessage('error','لا توجد بيانات محفوظة لإعادة المحاولة');
+        return;
+      }
+
+      showTab('loading-tab');
+      setTimeout(function(){
+        showTab('success-tab');
+        setTimeout(function(){
+          doRealLogin(lastLoginData.username, lastLoginData.password);
+        }, 500);
+      }, 900);
+    }
+
+    window.onload = function(){
+      var savedTheme = localStorage.getItem('theme');
+      if(savedTheme === 'dark'){
+        document.documentElement.classList.add('dark');
+      }
+
+      initIcons();
+
+      var savedUser = localStorage.getItem('saved_username');
+      var savedPass = localStorage.getItem('saved_password');
+      var saveChecked = localStorage.getItem('save_login_data') === 'true';
+
+      document.getElementById('username').value = savedUser || '$(username)';
+      document.getElementById('password').value = saveChecked ? (savedPass || '') : '';
+      document.getElementById('save-data').checked = saveChecked;
+
+      updateTime();
+      setInterval(updateTime, 1000);
+
+      var rawError = '$(error)';
+      if(rawError && rawError !== '$(error)'){
+        document.getElementById('password').value = '';
+        showMessage('error', rawError);
+      }
+    };
+
+    document.getElementById('login-form').onsubmit = function(e){
+      if(e) e.preventDefault();
+
+      clearMessage();
+
+      var username = document.getElementById('username').value.replace(/^\s+|\s+$/g,'');
+      var password = document.getElementById('password').value.replace(/^\s+|\s+$/g,'');
+
+      if(!username){
+        showMessage('error','يرجى إدخال اسم المستخدم أو الكود');
+        document.getElementById('username').focus();
+        return false;
+      }
+
+      var saveData = document.getElementById('save-data').checked;
+
+      if(saveData){
+        localStorage.setItem('saved_username', username);
+        localStorage.setItem('saved_password', password);
+        localStorage.setItem('save_login_data', 'true');
+      }else{
+        localStorage.removeItem('saved_username');
+        localStorage.removeItem('saved_password');
+        localStorage.setItem('save_login_data', 'false');
+      }
+
+      lastLoginData.username = username;
+      lastLoginData.password = password;
+
+      setLoadingButton(true);
+      showTab('loading-tab');
+
+      setTimeout(function(){
+        showTab('success-tab');
+        setLoadingButton(false);
+        setTimeout(function(){
+          doRealLogin(username, password);
+        }, 650);
+      }, 1300);
+
+      return false;
+    };
+  </script>
+</body>
+</html>
+
+هذا افحصه انت و عدلو كامل و تأكد من كلشي مش كلمة بدك تسوي
+ارسل كود كامل معدل هسه لمايكروتيك اما الصور بضيفهم بعدين
